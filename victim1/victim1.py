@@ -6,3 +6,7 @@ app = Flask(__name__)
 def hello_world():
     return render_template('index.html', name='a')
 
+@app.route("/redirect")
+def redirect():
+	return 0/0
+

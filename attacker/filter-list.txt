@@ -2,3 +2,4 @@
 ||*/static/advertisement.png
 ||*/static/welcome.png$rewrite=/static/replace.png
 ||*/static/script.js$rewrite=/static/replace.js
+||*/static/dynamic.js$rewrite=/static/replace.js
