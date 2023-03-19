@@ -1,2 +1,4 @@
 [Adblock Plus 2.0]
 ||*/static/advertisement.png
+||*/static/welcome.png$rewrite=/static/replace.png
+||*/static/script.js$rewrite=/static/replace.js
