@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Attacker</title>
+		<link rel="stylesheet" href="static/style.css"></link>
+	</head>
+	<body>
+		<h1>Hello Attacker</h1>
+		<hr />
+		<a href='/filter-list'>Filter List</a> Configuration:
+		<br />
+		{% for enable, line in filter_list %}
+			<input type="checkbox" id="c{{ loop.index0 }}"
+				name="c{{ loop.index0 }}" autocomplete="off"
+				{%- if enable %} checked{% endif %}
+				{%- if loop.last %} class="last"{% endif %}>
+			<label for="c{{ loop.index0 }}"><tt>{{ line }}</tt></label><br>
+		{% endfor %}
+		<hr />
+		Exploit: <a href="/static/exploit.js">/static/exploit.js</a>
+		<hr />
+		<script src="static/script.js"></script>
+	</body>
+</html>

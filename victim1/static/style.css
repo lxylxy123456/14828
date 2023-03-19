@@ -7,6 +7,10 @@ img, span {
 	background: #ffcccc;
 }
 
+.warn {
+	background: #ffff88;
+}
+
 .success {
 	background: #ccffcc;
 }

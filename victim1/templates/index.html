@@ -5,8 +5,10 @@
 		<link rel="stylesheet" href="static/style.css"></link>
 	</head>
 	<body>
+		<h1>Hello Victim</h1>
+		<hr />
 		<p>
-			Hello {{ name }}:
+			Welcome image:
 			<img src="static/welcome.png">
 		</p>
 		<hr />
@@ -18,6 +20,7 @@
 		<p>
 			Static JS:
 			<span id="sjs">...</span>
+			<script src="static/static.js"></script>
 		</p>
 		<hr />
 		<p>
@@ -25,6 +28,20 @@
 			<span id="djs">...</span>
 			<button id="load">Load</button>
 		</p>
+		<hr />
+		<p>
+			Open <a href="/redirect">redirect</a>:
+			<input type="name" id="redir_url" value="{{ redir_url }}"
+					autocomplete="off"/>
+			<button id="redir_update">Update</button>
+			<br />
+			ATTACKER = <input type="name" id="attacker" value="127.0.0.1" />
+			<ul>
+				<li class="redir_prefill">/static/replace.js</li>
+				<li class="redir_prefill">http://ATTACKER/static/exploit.js</li>
+			</ul>
+		</p>
+		<hr />
 		<script src="static/script.js"></script>
 	</body>
 </html>

@@ -1,5 +1,7 @@
 [Adblock Plus 2.0]
 ||*/static/advertisement.png
+||*/static/static.js
 ||*/static/welcome.png$rewrite=/static/replace.png
-||*/static/script.js$rewrite=/static/replace.js
+||*/static/static.js$rewrite=/static/replace.js
 ||*/static/dynamic.js$rewrite=/static/replace.js
+||*/static/dynamic.js$rewrite=/redirect
