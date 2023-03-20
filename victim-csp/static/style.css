@@ -1,0 +1,16 @@
+img, span {
+	border-style: solid;
+	border-width: 1px;
+}
+
+.fail {
+	background: #ffcccc;
+}
+
+.warn {
+	background: #ffff88;
+}
+
+.success {
+	background: #ccffcc;
+}
