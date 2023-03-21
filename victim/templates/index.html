@@ -1,31 +1,35 @@
 <!doctype html>
 <html>
 	<head>
-		<title>Victim 1</title>
-		<link rel="stylesheet" href="static/style.css"></link>
+		<title>Victim</title>
+		<link rel="stylesheet" href="/static/style.css"></link>
 	</head>
 	<body>
 		<h1>Hello Victim</h1>
 		<hr />
 		<p>
 			Welcome image:
-			<img src="static/welcome.png">
+			<img src="/static/welcome.png">
 		</p>
 		<hr />
 		<p>
 			Advertisement:
-			<img src="static/advertisement.png">
+			<span id="ajs" class="border">...</span>
+			<span id="ads_png">
+				<!-- <img src="/static/advertisement.png"> -->
+			</span>
+			<script src="/static/advertisement.js"></script>
 		</p>
 		<hr />
 		<p>
 			Static JS:
-			<span id="sjs">...</span>
-			<script src="static/static.js"></script>
+			<span id="sjs" class="border">...</span>
+			<script src="/static/static.js"></script>
 		</p>
 		<hr />
 		<p>
 			Dynamic JS:
-			<span id="djs">...</span>
+			<span id="djs" class="border">...</span>
 			<button id="load">Load</button>
 		</p>
 		<hr />
@@ -51,6 +55,6 @@
 			<label for="c{{ loop.index0 }}"><tt>{{ line }}</tt></label><br>
 			{% endfor %}
 		</p>
-		<script src="static/script.js"></script>
+		<script src="/static/script.js"></script>
 	</body>
 </html>

@@ -1,4 +1,4 @@
-img, span {
+img, .border {
 	border-style: solid;
 	border-width: 1px;
 }
@@ -9,12 +9,19 @@ tt {
 
 .fail {
 	background: #ffcccc;
+	border-style: solid;
+	border-width: 1px;
 }
 
 .warn {
 	background: #ffff88;
+	border-style: solid;
+	border-width: 1px;
 }
 
 .success {
 	background: #ccffcc;
+	border-style: solid;
+	border-width: 1px;
 }
+
