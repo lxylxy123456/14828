@@ -3,6 +3,10 @@ img, span {
 	border-width: 1px;
 }
 
+tt {
+	white-space: pre;
+}
+
 .fail {
 	background: #ffcccc;
 }

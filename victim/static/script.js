@@ -20,10 +20,36 @@ document.getElementById("redir_url").addEventListener("input", send_redir_url);
 
 for (let i of document.getElementsByClassName("redir_prefill")) {
 	i.addEventListener("click", function(event) {
-		const attacker = document.getElementById("attacker").value;
-		let url = i.innerText.replace("ATTACKER", attacker);
-		document.getElementById("redir_url").value = url;
+		document.getElementById("redir_url").value = this.innerText;
 		send_redir_url();
 	});
+}
+
+document.getElementById("csp_apply").addEventListener("click", function(event) {
+	event.preventDefault();
+	location.reload();
+});
+
+function handle_check(event) {
+	const payload = new FormData();
+	for (let i = 0;; i++) {
+		const elem = document.getElementById("c" + i);
+		payload.append("c" + i, JSON.stringify(elem.checked));
+		if (elem.classList.contains("last")) {
+			break;
+		}
+	}
+
+	const req = new XMLHttpRequest();
+	req.open("POST", "/csp-list");
+	req.send(payload);
+}
+
+for (let i = 0;; i++) {
+	const elem = document.getElementById("c" + i);
+	elem.addEventListener("click", handle_check);
+	if (elem.classList.contains("last")) {
+		break;
+	}
 }
 
