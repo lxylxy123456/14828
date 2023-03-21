@@ -18,6 +18,14 @@ csp_list = [
 redir_url = '/static/replace.js'
 global_lock = Lock()
 
+def compute_csp():
+	ans = []
+	with global_lock:
+		for enable, line in csp_list:
+			if enable:
+				ans.append(line.strip())
+	return ' '.join(ans)
+
 @app.route("/")
 def hello_world():
 	with global_lock:
@@ -43,4 +51,9 @@ def open_redirect():
 		# TODO: return CSP?
 		with global_lock:
 			return redirect(redir_url)
+
+@app.after_request
+def add_security_headers(resp):
+	resp.headers['Content-Security-Policy'] = compute_csp()
+	return resp
 

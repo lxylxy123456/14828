@@ -3,10 +3,6 @@
 	<head>
 		<title>Victim 1</title>
 		<link rel="stylesheet" href="static/style.css"></link>
-		<meta http-equiv="Content-Security-Policy" content="
-			{%- for enable, line in csp_list %}
-			{%- if enable %}{{ line }} {% endif %}
-			{%- endfor %}" />
 	</head>
 	<body>
 		<h1>Hello Victim</h1>
