@@ -25,3 +25,7 @@ tt {
 	border-width: 1px;
 }
 
+#user {
+	height:200px;
+    font-size:14pt;
+}
