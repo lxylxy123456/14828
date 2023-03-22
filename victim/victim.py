@@ -52,6 +52,14 @@ def open_redirect():
 		with global_lock:
 			return redirect(redir_url)
 
+@app.route("/user", methods=['POST'])
+def save_user_script():
+	assert request.method == 'POST'
+	with global_lock:
+		with open('static/user.js', 'w+') as f:
+			f.write(request.form['user'])
+	return 'Success'
+
 @app.after_request
 def add_security_headers(resp):
 	resp.headers['Content-Security-Policy'] = compute_csp()
