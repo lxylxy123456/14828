@@ -5,4 +5,4 @@
 ||*/static/static.js$rewrite=/static/replace.js
 ||*/static/dynamic.js$rewrite=/static/replace.js
 ||*/static/dynamic.js$rewrite=/redirect
-||*/static/dynamic.js$rewrite=/static/user.js
+||*/static/dynamic.js$rewrite=/upload/user.js

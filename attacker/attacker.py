@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, send_file, make_response
+from flask import Flask, request, render_template, make_response
 import json
 from threading import Lock
 

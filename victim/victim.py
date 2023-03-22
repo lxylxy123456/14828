@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, make_response, redirect
 import json
 from threading import Lock
 
@@ -16,6 +16,7 @@ csp_list = [
 	[False, "connect-src 'self';"],
 ]
 redir_url = '/static/replace.js'
+user_js = ''
 global_lock = Lock()
 
 def compute_csp():
@@ -48,17 +49,21 @@ def open_redirect():
 			redir_url = request.form['url']
 		return 'Success';
 	else:
-		# TODO: return CSP?
 		with global_lock:
 			return redirect(redir_url)
 
-@app.route("/user", methods=['POST'])
+@app.route("/upload/user.js", methods=['GET', 'POST'])
 def save_user_script():
-	assert request.method == 'POST'
-	with global_lock:
-		with open('static/user.js', 'w+') as f:
-			f.write(request.form['user'])
-	return 'Success'
+	global user_js
+	if request.method == 'POST':
+		with global_lock:
+			user_js = request.form['user']
+		return 'Success'
+	else:
+		with global_lock:
+			resp = make_response(user_js)
+			resp.mimetype = 'text/plain'
+			return resp
 
 @app.after_request
 def add_security_headers(resp):

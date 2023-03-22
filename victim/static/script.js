@@ -25,6 +25,23 @@ for (let i of document.getElementsByClassName("redir_prefill")) {
 	});
 }
 
+{
+	const req = new XMLHttpRequest();
+	req.addEventListener("load", function(event) {
+		document.getElementById("user").value = req.responseText;
+	});
+	req.open("GET", "/upload/user.js");
+	req.send();
+}
+
+document.getElementById("user").addEventListener("input", function(event) {
+	const payload = new FormData();
+	payload.append("user", this.value);
+	const req = new XMLHttpRequest();
+	req.open("POST", "/upload/user.js");
+	req.send(payload);
+});
+
 document.getElementById("csp_apply").addEventListener("click", function(event) {
 	event.preventDefault();
 	location.reload();
