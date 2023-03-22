@@ -25,7 +25,12 @@ tt {
 	border-width: 1px;
 }
 
+#redir_url {
+	width: 20em;
+	font-size: 1em;
+}
+
 #user {
-	height:200px;
-    font-size:14pt;
+	width: 90%;
+	font-size: 1em;
 }
