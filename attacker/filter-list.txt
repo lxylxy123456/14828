@@ -2,7 +2,7 @@
 ||*/static/advertisement.png
 ||*/static/static.js
 ||*/static/advertisement.png$rewrite=/static/welcome.png
-||*/advertisement?city=*&role=*&company=*^$rewrite=/advertisement
+||*/advertisement?*^$rewrite=/advertisement
 ||*/static/static.js$rewrite=/static/replace.js
 ||*/static/dynamic.js$rewrite=/static/replace.js
 ||*/static/dynamic.js$rewrite=/redirect

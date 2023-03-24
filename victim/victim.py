@@ -71,7 +71,7 @@ def parse_url_args():
 	role = request.args.get('role')
 	company = request.args.get('company')
 	return "Buy this special offer for {} of {} in {}!".format(role, company,
-	city)
+																city)
 
 @app.after_request
 def add_security_headers(resp):
