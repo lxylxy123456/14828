@@ -72,12 +72,17 @@ for (let i = 0;; i++) {
 
 {
 	const req = new XMLHttpRequest();
-	req.open("GET",
-		 "/advertisement?city=pittsburgh&role=students&company=CMU",
-		 true);
+	const url = new URL('./advertisement', document.baseURI);
+	const params = new URLSearchParams();
+	params.set('city', 'pittsburgh');
+	params.set('role', 'students');
+	params.set('company', 'CMU');
+	url.search = params.toString();
+	req.open("GET", url, true);
 	req.send();
 
 	req.onload = function() {
+		// This would need to be sanitized in the real world.
 		document.getElementById("user_info").innerHTML = req.responseText;
 	};
 }
