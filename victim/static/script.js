@@ -72,7 +72,9 @@ for (let i = 0;; i++) {
 
 {
 	const req = new XMLHttpRequest();
-	req.open("GET", "/advertisement?city=pittsburgh&role=students&company=CMU", true);
+	req.open("GET",
+		 "/advertisement?city=pittsburgh&role=students&company=CMU",
+		 true);
 	req.send();
 
 	req.onload = function() {
