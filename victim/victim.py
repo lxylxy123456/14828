@@ -65,6 +65,14 @@ def save_user_script():
 			resp.mimetype = 'text/plain'
 			return resp
 
+@app.route("/advertisement", methods=['GET'])
+def parse_url_args():
+	city = request.args.get('city')
+	role = request.args.get('role')
+	company = request.args.get('company')
+	return "Buy this special offer for {} of {} in {}!".format(role, company,
+	city)
+
 @app.after_request
 def add_security_headers(resp):
 	resp.headers['Content-Security-Policy'] = compute_csp()
