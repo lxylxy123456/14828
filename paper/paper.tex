@@ -50,18 +50,48 @@ TODO \cite{b1}
 
 \section{Background and Goals}
 TODO
+\begin{itemize}
+\item Blocking Ads extensions massive adoption.
+\item Adblock filters contain a lot of lines.
+\item \$rewrite rule: what it does, why is it introduced.
+\item Goal 1: prove that they imply a new attack surface.
+\item Goal 2: create a full working Proof of Concept.
+\end{itemize}
 
 \section{Attack Outline}
 TODO
+\begin{itemize}
+\item Victim website: Open redirect combined with fetching and loading JS code provokes worse problems.
+\item Victim user: install malicious filter list (may be updated automatically), visit victim website.
+\item Attacker: control the malicious filter list.
+\item Potential impact.
+\end{itemize}
 
 \section{Implementation}
 TODO
+\begin{itemize}
+\item Recreating the environment.
+\item Adblock plus version vulnerable, browser version
+\item Attacker’s website.
+\item Victim’s website.
+\item CSP policies.
+\end{itemize}
 
 \section{Discussion and Limitations}
 TODO
+\begin{itemize}
+\item How Google mitigated the issue.
+\item How Adblock Plus defended (limits the ability of filter rules).
+\item Public warnings previous the deploy of the \$rewrite feature.
+\item Limitations: downgrade of browser version was needed.
+\item Limitations: further analysis on other browsers.
+\end{itemize}
 
 \section{Related Work}
 TODO
+\begin{itemize}
+\item Advertisement blocking and detection.
+\end{itemize}
 
 \section{Conclusion}
 TODO
