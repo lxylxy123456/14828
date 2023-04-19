@@ -11,7 +11,7 @@
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
-\title{Arbitrary code injection in Adblock Plus
+\title{Arbitrary Code Injection in Adblock Plus
 % \thanks{Identify applicable funding agency here. If none, delete this.}
 }
 
@@ -22,16 +22,20 @@ Pittsburgh, U.S.A \\
 xiaoyili@andrew.cmu.edu}
 \and
 \IEEEauthorblockN{Teresa Alberto}
-\IEEEauthorblockA{\textit{(TODO) dept. name of organization (of Aff.)} \\
-\textit{(TODO) name of organization (of Aff.)}\\
-(TODO) City, Country \\
-(TODO) email address or ORCID}
+\IEEEauthorblockA{
+Information Networking Institute \\
+Carnegie Mellon University\\
+Pittsburgh, U.S.A \\
+talberto@andrew.cmu.edu
+}
 \and
 \IEEEauthorblockN{Chengcheng Ding}
-\IEEEauthorblockA{\textit{(TODO) dept. name of organization (of Aff.)} \\
-\textit{(TODO) name of organization (of Aff.)}\\
-(TODO) City, Country \\
-(TODO) email address or ORCID}
+\IEEEauthorblockA{
+Information Networking Institute \\
+Carnegie Mellon University\\
+Pittsburgh, U.S.A \\
+chengchd@andrew.cmu.edu
+}
 }
 
 \maketitle
@@ -42,21 +46,50 @@ TODO
 \end{abstract}
 
 \begin{IEEEkeywords}
-browser, extension, ad blocking, XSS
+browser security, browser extension, ad blocking, XSS
 \end{IEEEkeywords}
 
 \section{Introduction}
-TODO \cite{abp_code_injection,abp_issue_6622,abp_rewrite_pr,abp_filter_guide,carlini2012evaluation,barth2010protecting,bauer2014analyzing}
+% Author: Chengcheng Ding
+Since the very beginning of their introduction, browser extensions expose additional attack surfaces for browsers. Their popularity among users only makes the matter worse: a vulnerability in a popular extension can affect millions of users. One such popular extension is Adblock Plus, which has tens of millions of users on Chrome and Firefox combined. \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate} In this article, we will investigate a vulnerability introduced in a previous version of Adblock Plus that enabled the execution of arbitrary code on users' devices.
+
+Adblock Plus has a very well-intended feature that allows users to apply custom filter rules. To do so, users can supply a text file that provides (a list of) rule(s) written in the syntax specified by Adblock Plus. Similarly, users can also apply custom filter rules crafted by others to their Adblock Plus extensions. This introduced another party in the threat model.
+
+A standard custom filter rule mentioned above consists of 2 items:
+\begin{enumerate}
+    \item A pattern of URIs. All requests made to a URI that fits such a pattern will be filtered
+    \item The action to the request that will be filtered. The most obvious and straightforward example would be blocking that request.
+\end{enumerate}
+
+In Adblock Plus version 3.2, released on July 17, 2018, a new option for filter action is introduced: rewrite. It allowed users to rewrite requests to a new destination. In that release, it is restricted that the new destination must be of the same origin as the original request. Unfortunately, this introduced new vulnerabilities that allowed arbitrary code execution on user machines that somehow applied malicious filter rules to their extension. \cite{abp_code_injection,abp_issue_6622,abp_rewrite_pr,abp_filter_guide}
+
+We contribute the following:
+\begin{enumerate}
+    \item An explanation of the technology details behind the attack.
+    \item A detailed guide to re-implementing the attack, that specifies corresponding versions of the products related, and a demo website that showcases the attack.
+    \item What we can learn from this vulnerability: its impacts, and what vendors can do to mitigate against it.
+\end{enumerate}
 
 \section{Background and Goals}
-TODO
-\begin{itemize}
-\item Blocking Ads extensions massive adoption.
-\item Adblock filters contain a lot of lines.
-\item \$rewrite rule: what it does, why is it introduced.
-\item Goal 1: prove that they imply a new attack surface.
-\item Goal 2: create a full working Proof of Concept.
-\end{itemize}
+\subsection{Massive adaptation of ad-blocking extensions}
+% Author: Chengcheng Ding
+Extensions play a critical role in the capabilities of modern browsers, enabling customized web experiences. Among them is a popular category of extensions that blocks advertisements on web pages. One of the most popular in that category is Adblock Plus. According to statistics from the Chrome extensions web store and Mozilla Firefox add-on store, tens of millions of users have Adblock Plus installed. \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate} According to a study by Pujol et al., 22\% of the most active users analyzed browse the Web with Adblock Plus. In fact, Ad-blocking extensions are so popular that advertisement vendors have begun to take active measures against them.\cite{mughees_first_2016} Therefore, vulnerabilities from the Adblock Plus extension can impact a considerable amount of internet users. That is why we have chosen to investigate a vulnerability in a previous version of Adblock Plus.
+
+\subsection{Custom filters in Adblock Plus}
+% Author: Chengcheng Ding
+The default advertisement-blocking behaviors of Adblock Plus are defined by a filter list included in the extension. In addition to that, Adblock Plus enables custom filters created by users. These filters allow users to block ads and other unwanted content that may not be covered by the default filter lists. Users can create their own filters by specifying URLs or patterns of URLs, and the actions they want to take against them, such as blocking or allowing. Custom filter lists can also be shared with other Adblock Plus users. From a security standpoint, custom filters involve additional third parties in the flow of ad-blocking, potentially creating additional attack surfaces. The filters are not written in a syntax easily understandable for most average users. Hence, attackers can embed malicious filter actions and present them to users as a filter for additional features, if the filter rules' functionalities allow them.
+
+\subsection{The rewrite rule: What and Why}
+% Author: Chengcheng Ding
+In version 3.2 of Adblock Plus, released on July 17, 2018, a new filter option called "rewrite" was introduced. It allows users to rewrite outgoing requests to certain URL(s). In this version, the destination of requests can be rewritten to resources within the same origin. For example, a request to "foo.com/ad.js" can be rewritten to "foo.com/not-ad.js". \\
+There can be multiple correct usages of the rewrite filter. The first (and primary) one is when simply blocking a request to a certain advertisement-related resource will lead to an error. That's when rewriting the request is a reasonable way to block advertisements with minimal impact on user experience. \\
+Another potential way of using the rewrite filter is eliminating certain HTTP request parameters related to privacy. Advertisers have long used HTTP request parameters for cross-site tracking. Parameters in advertisement links help vendors figure out where the click comes from. Therefore, the rewrite filter can be utilized in this scenario to eliminate request parameters related to tracking. \\
+
+\subsection{Goals of this project}
+% Author: Chengcheng Ding
+There are mainly 2 goals for this project, centered around the vulnerability introduced by the first implementation of the rewrite rule, and its implications. \\
+The first goal is to prove that the vulnerability implies a previously understated attack surface. The vulnerability's chain of exploits utilizes vulnerabilities, or even features, that would be considered low-impact or no-impact on their own. For example, a crucial component of this vulnerability, open redirect, would be considered a feature instead of a vulnerability in many websites. As a matter of fact, Google is still choosing to keep its open redirects while acknowledging it can be a tool for phishers.\cite{noauthor_open_nodate} \\
+The second goal of this project is to recreate a proof of concept of the attack scenario. The proof of concept will specify the versions of all of the related software, and provide a skeleton website to demonstrate the capabilities of the attack. The details of the proof of concept can be found in section \ref{Implementation}.\\
 
 \section{Attack Outline}
 TODO
@@ -67,7 +100,7 @@ TODO
 \item Potential impact.
 \end{itemize}
 
-\section{Implementation}
+\section{Implementation}\label{Implementation}
 TODO
 \begin{itemize}
 \item Recreating the environment.
