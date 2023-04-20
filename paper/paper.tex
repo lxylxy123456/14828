@@ -51,7 +51,7 @@ browser security, browser extension, ad blocking, XSS
 
 \section{Introduction}
 % Author: Chengcheng Ding
-Since the very beginning of their introduction, browser extensions expose additional attack surfaces for browsers. Their popularity among users only makes the matter worse: a vulnerability in a popular extension can affect millions of users. One such popular extension is Adblock Plus, which has tens of millions of users on Chrome and Firefox combined. \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate} In this article, we will investigate a vulnerability introduced in a previous version of Adblock Plus that enabled the execution of arbitrary code on users' devices.
+Since the very beginning of their introduction, browser extensions expose additional attack surfaces for browsers. Their popularity among users only makes the matter worse: a vulnerability in a popular extension can affect millions of users. One such popular extension is Adblock Plus, which has tens of millions of users on Chrome and Firefox combined \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate}. In this article, we will investigate a vulnerability introduced in a previous version of Adblock Plus that enabled the execution of arbitrary code on users' devices.
 
 Adblock Plus has a very well-intended feature that allows users to apply custom filter rules. To do so, users can supply a text file that provides (a list of) rule(s) written in the syntax specified by Adblock Plus. Similarly, users can also apply custom filter rules crafted by others to their Adblock Plus extensions. This introduced another party in the threat model.
 
@@ -61,7 +61,7 @@ A standard custom filter rule mentioned above consists of 2 items:
     \item The action to the request that will be filtered. The most obvious and straightforward example would be blocking that request.
 \end{enumerate}
 
-In Adblock Plus version 3.2, released on July 17, 2018, a new option for filter action is introduced: rewrite. It allowed users to rewrite requests to a new destination. In that release, it is restricted that the new destination must be of the same origin as the original request. Unfortunately, this introduced new vulnerabilities that allowed arbitrary code execution on user machines that somehow applied malicious filter rules to their extension. \cite{abp_code_injection,abp_issue_6622,abp_rewrite_pr,abp_filter_guide}
+In Adblock Plus version 3.2, released on July 17, 2018, a new option for filter action is introduced: rewrite. It allowed users to rewrite requests to a new destination. In that release, it is restricted that the new destination must be of the same origin as the original request. Unfortunately, this introduced new vulnerabilities that allowed arbitrary code execution on user machines that somehow applied malicious filter rules to their extension \cite{abp_code_injection,abp_issue_6622,abp_rewrite_pr,abp_filter_guide}.
 
 We contribute the following:
 \begin{enumerate}
@@ -73,7 +73,7 @@ We contribute the following:
 \section{Background and Goals}
 \subsection{Massive adaptation of ad-blocking extensions}
 % Author: Chengcheng Ding
-Extensions play a critical role in the capabilities of modern browsers, enabling customized web experiences. Among them is a popular category of extensions that blocks advertisements on web pages. One of the most popular in that category is Adblock Plus. According to statistics from the Chrome extensions web store and Mozilla Firefox add-on store, tens of millions of users have Adblock Plus installed. \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate} According to a study by Pujol et al., 22\% of the most active users analyzed browse the Web with Adblock Plus. In fact, Ad-blocking extensions are so popular that advertisement vendors have begun to take active measures against them.\cite{mughees_first_2016} Therefore, vulnerabilities from the Adblock Plus extension can impact a considerable amount of internet users. That is why we have chosen to investigate a vulnerability in a previous version of Adblock Plus.
+Extensions play a critical role in the capabilities of modern browsers, enabling customized web experiences. Among them is a popular category of extensions that blocks advertisements on web pages. One of the most popular in that category is Adblock Plus. According to statistics from the Chrome extensions web store and Mozilla Firefox add-on store, tens of millions of users have Adblock Plus installed \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate}. According to a study by Pujol et al., 22\% of the most active users analyzed browse the Web with Adblock Plus. In fact, Ad-blocking extensions are so popular that advertisement vendors have begun to take active measures against them \cite{mughees_first_2016}. Therefore, vulnerabilities from the Adblock Plus extension can impact a considerable amount of internet users. That is why we have chosen to investigate a vulnerability in a previous version of Adblock Plus.
 
 \subsection{Custom filters in Adblock Plus}
 % Author: Chengcheng Ding
@@ -81,15 +81,19 @@ The default advertisement-blocking behaviors of Adblock Plus are defined by a fi
 
 \subsection{The rewrite rule: What and Why}
 % Author: Chengcheng Ding
-In version 3.2 of Adblock Plus, released on July 17, 2018, a new filter option called "rewrite" was introduced. It allows users to rewrite outgoing requests to certain URL(s). In this version, the destination of requests can be rewritten to resources within the same origin. For example, a request to "foo.com/ad.js" can be rewritten to "foo.com/not-ad.js". \\
-There can be multiple correct usages of the rewrite filter. The first (and primary) one is when simply blocking a request to a certain advertisement-related resource will lead to an error. That's when rewriting the request is a reasonable way to block advertisements with minimal impact on user experience. \\
-Another potential way of using the rewrite filter is eliminating certain HTTP request parameters related to privacy. Advertisers have long used HTTP request parameters for cross-site tracking. Parameters in advertisement links help vendors figure out where the click comes from. Therefore, the rewrite filter can be utilized in this scenario to eliminate request parameters related to tracking. \\
+In version 3.2 of Adblock Plus, released on July 17, 2018, a new filter option called "rewrite" was introduced. It allows users to rewrite outgoing requests to certain URL(s). In this version, the destination of requests can be rewritten to resources within the same origin. For example, a request to "foo.com/ad.js" can be rewritten to "foo.com/not-ad.js".
+
+There can be multiple correct usages of the rewrite filter. The first (and primary) one is when simply blocking a request to a certain advertisement-related resource will lead to an error. That's when rewriting the request is a reasonable way to block advertisements with minimal impact on user experience.
+
+Another potential way of using the rewrite filter is eliminating certain HTTP request parameters related to privacy. Advertisers have long used HTTP request parameters for cross-site tracking. Parameters in advertisement links help vendors figure out where the click comes from. Therefore, the rewrite filter can be utilized in this scenario to eliminate request parameters related to tracking.
 
 \subsection{Goals of this project}
 % Author: Chengcheng Ding
-There are mainly 2 goals for this project, centered around the vulnerability introduced by the first implementation of the rewrite rule, and its implications. \\
-The first goal is to prove that the vulnerability implies a previously understated attack surface. The vulnerability's chain of exploits utilizes vulnerabilities, or even features, that would be considered low-impact or no-impact on their own. For example, a crucial component of this vulnerability, open redirect, would be considered a feature instead of a vulnerability in many websites. As a matter of fact, Google is still choosing to keep its open redirects while acknowledging it can be a tool for phishers.\cite{noauthor_open_nodate} \\
-The second goal of this project is to recreate a proof of concept of the attack scenario. The proof of concept will specify the versions of all of the related software, and provide a skeleton website to demonstrate the capabilities of the attack. The details of the proof of concept can be found in section \ref{Implementation}.\\
+There are mainly 2 goals for this project, centered around the vulnerability introduced by the first implementation of the rewrite rule, and its implications.
+
+The first goal is to prove that the vulnerability implies a previously understated attack surface. The vulnerability's chain of exploits utilizes vulnerabilities, or even features, that would be considered low-impact or no-impact on their own. For example, a crucial component of this vulnerability, open redirect, would be considered a feature instead of a vulnerability in many websites. As a matter of fact, Google is still choosing to keep its open redirects while acknowledging it can be a tool for phishers.\cite{noauthor_open_nodate}
+
+The second goal of this project is to recreate a proof of concept of the attack scenario. The proof of concept will specify the versions of all of the related software, and provide a skeleton website to demonstrate the capabilities of the attack. The details of the proof of concept can be found in section \ref{Implementation}.
 
 \section{Attack Outline}
 TODO
@@ -159,4 +163,5 @@ copy& More table copy$^{\mathrm{a}}$& &  \\
 \caption{Example of a figure caption.}
 \label{fig}
 \end{figure}
+
 
