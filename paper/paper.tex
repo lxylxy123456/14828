@@ -74,15 +74,15 @@ We contribute the following:
 \end{enumerate}
 
 \section{Background and Goals}
-\subsection{Massive adaptation of ad-blocking extensions}
+\subsection{Massive Adaptation of Ad-Blocking Extensions}
 % Author: Chengcheng Ding
 Extensions play a critical role in the capabilities of modern browsers, enabling customized web experiences. Among them is a popular category of extensions that blocks advertisements on web pages. One of the most popular in that category is Adblock Plus. According to statistics from the Chrome extensions web store and Mozilla Firefox add-on store, tens of millions of users have Adblock Plus installed \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate}. According to a study by Pujol et al., 22\% of the most active users analyzed browse the Web with Adblock Plus. In fact, Ad-blocking extensions are so popular that advertisement vendors have begun to take active measures against them \cite{mughees_first_2016}. Therefore, vulnerabilities from the Adblock Plus extension can impact a considerable amount of internet users. That is why we have chosen to investigate a vulnerability in a previous version of Adblock Plus.
 
-\subsection{Custom filters in Adblock Plus}
+\subsection{Custom Filters in Adblock Plus}
 % Author: Chengcheng Ding
 The default advertisement-blocking behaviors of Adblock Plus are defined by a filter list included in the extension. In addition to that, Adblock Plus enables custom filters created by users. These filters allow users to block ads and other unwanted content that may not be covered by the default filter lists. Users can create their own filters by specifying URLs or patterns of URLs, and the actions they want to take against them, such as blocking or allowing. Custom filter lists can also be shared with other Adblock Plus users. From a security standpoint, custom filters involve additional third parties in the flow of ad-blocking, potentially creating additional attack surfaces. The filters are not written in a syntax easily understandable for most average users. Hence, attackers can embed malicious filter actions and present them to users as a filter for additional features, if the filter rules' functionalities allow them.
 
-\subsection{The rewrite rule: What and Why}
+\subsection{The Rewrite Rule: What and Why}
 % Author: Chengcheng Ding
 In version 3.2 of Adblock Plus, released on July 17, 2018, a new filter option called "rewrite" was introduced. It allows users to rewrite outgoing requests to certain URL(s). In this version, the destination of requests can be rewritten to resources within the same origin. For example, a request to "foo.com/ad.js" can be rewritten to "foo.com/not-ad.js".
 
@@ -90,13 +90,13 @@ There can be multiple correct usages of the rewrite filter. The first (and prima
 
 Another potential way of using the rewrite filter is eliminating certain HTTP request parameters related to privacy. Advertisers have long used HTTP request parameters for cross-site tracking. Parameters in advertisement links help vendors figure out where the click comes from. Therefore, the rewrite filter can be utilized in this scenario to eliminate request parameters related to tracking.
 
-\subsection{Goals of this project}
+\subsection{Goals of This Project}
 % Author: Chengcheng Ding
 There are mainly 2 goals for this project, centered around the vulnerability introduced by the first implementation of the rewrite rule, and its implications.
 
 The first goal is to prove that the vulnerability implies a previously understated attack surface. The vulnerability's chain of exploits utilizes vulnerabilities, or even features, that would be considered low-impact or no-impact on their own. For example, a crucial component of this vulnerability, open redirect, would be considered a feature instead of a vulnerability in many websites. As a matter of fact, Google is still choosing to keep its open redirects while acknowledging it can be a tool for phishers.\cite{noauthor_open_nodate}
 
-The second goal of this project is to recreate a proof of concept of the attack scenario. The proof of concept will specify the versions of all of the related software, and provide a skeleton website to demonstrate the capabilities of the attack. The details of the proof of concept can be found in section \ref{sec:Implementation}.
+The second goal of this project is to recreate a proof of concept of the attack scenario. The proof of concept will specify the versions of all of the related software, and provide a skeleton website to demonstrate the capabilities of the attack. The details of the proof of concept can be found in Section \ref{sec:Implementation}.
 
 \section{Attack Outline}
 TODO
@@ -109,6 +109,7 @@ TODO
 
 \section{Implementation}
 \label{sec:Implementation}
+% Eric Li: I am editing this section on GitHub, please do not edit this section.
 % Author: Eric Li
 
 In this section, we explain how we reproduce the attack. We provide a fully functioning environment for demonstrating this attack. We write two websites using Flask as the attacker and the victim website. We also add CSP logics to demonstrate the recommended mitigation in \cite{abp_code_injection}.
