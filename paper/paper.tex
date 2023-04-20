@@ -9,7 +9,7 @@
 \usepackage{xcolor}
 \usepackage{verbatim}
 \usepackage{listings}
-\lstset{basicstyle=\ttfamily}
+\lstset{basicstyle=\ttfamily, upquote=true}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -112,7 +112,7 @@ TODO
 % Eric Li: I am editing this section on GitHub, please do not edit this section.
 % Author: Eric Li
 
-In this section, we explain how we reproduce the attack. We provide a fully functioning environment for demonstrating this attack. We write two websites using Flask as the attacker and the victim website. We also add CSP logics to demonstrate the recommended mitigation in \cite{abp_code_injection}.
+In this section, we explain how we reproduce the attack. We provide a fully functioning environment for demonstrating this attack. We write two websites using Flask as the attacker and the victim website. We also add Content Security Policy (CSP) logics to demonstrate the recommended mitigation in \cite{abp_code_injection}.
 
 TODO: we make our project open source?
 
@@ -133,7 +133,7 @@ In this research, we only test reproducing the attack on Linux. However, since C
 
 \subsection{Attacker Website}
 
-We implement the attacker website using Flask as the backend. We use plain HTML and JavaScript as the frontend. The attacker website has two features.
+We implement the attacker website using Flask as the backend. The host name and port of the attacker website are \lstinline{attacker.local:8080}. We use plain HTML and JavaScript as the frontend. The attacker website has two features.
 
 First, the attacker website hosts an filter rules file that will be loaded to the victim user's browser. To make demonstration easy, we design an interfaces using HTML and JavaScript to modify the filter rules from a browser. The attacker can choose from any subset of the pre-defined 8 rules:
 
@@ -160,7 +160,7 @@ Second, the attacker website needs to host the malicious JavaScript payload to b
 
 \subsection{Victim Website}
 
-Similar to the attacker website, we implement the attacker website using Flask as the backend. We use plain HTML and JavaScript as the frontend. The victim website has multiple sections, as discussed below in detail.
+Similar to the attacker website, we implement the attacker website using Flask as the backend. The host name and port of the victim website are \lstinline{victim.local:8080}. We use plain HTML and JavaScript as the frontend. The victim website has multiple sections, as discussed below in detail.
 
 \subsubsection{Welcome Image}
 
@@ -184,11 +184,34 @@ The victim website loads a JavaScript script statically using the \lstinline{<sc
 
 \subsubsection{Dynamic JavaScript}
 
-TODO
+The victim website loads a JavaScript script dynamically when the user clicks a button. The browser first requests the content of the script using XHR. The browser then evaluates the downloaded script using \lstinline{eval()}. This is similar to how Google Maps dynamically load JavaScripts while the user is browsing the map. Similar to Google Maps, the victim website must enable \lstinline{script-src 'unsafe-eval'} in CSP to make dynamically loading JavaScript working.
+
+\subsubsection{Open Redirect}
+
+One weakness of the victim website is open redirect, where any user can define HTTP redirects in the website \cite{cwe_open_redir}. In the victim website, the attacker can control the URL \lstinline{/redirect} to return an HTTP 302 to any URL. Example URL include a JavaScript on the victim website and a JavaScript on the attacker website.
+
+The I'm Feeling Lucky button provided by Google Search has this weakness in 2019. When the user clicks the button, the website sends a GET request to Google's server. The request contains the user's query and \lstinline{btnI} parameter to indicate the user clicks the I'm Feeling Lucky button. Google's server returns an HTTP 302 response to the first Google Search result. An attacker can use this feature as an open redirect. The attacker simply needs to construct a Google Search query that places the redirect target as the first Google Search result. This weakness is fixed by Google later, as discussed in TODO.
+
+\subsubsection{User Uploaded File}
+
+Another weakness of the victim website is user uploaded file with JavaScript content \cite{cwe_upload_file}. The victim website does not perform any sanitization to the file uploaded, and any user of the victim website can view the uploaded file. Thus, if the attacker can trick the victim browser to load the uploaded file, the attacker can achieve arbitrary file execution.
+
+\subsubsection{CSP}
+
+The victim website allows dynamically configuring the website's CSP. This allows easy understanding the effectiveness of different defense strategies. In an attempt to defend, the victim user can try to remove \lstinline{script-src *} from CSP and/or to add \lstinline{connect-src 'self'} to the CSP.
+
+\subsection{Attacker User}
+
+The attacker user runs any modern browser that can run JavaScript. The attacker user opens the attacker website and interacts with it. The attacker user also interacts with the victim website by changing the open redirect target and uploading the JavaScript file.
 
 \subsection{Victim User}
 
+We setup the victim user in a Linux virtual machine. The virtual machine runs Chromium 69. We install AdBlock Plus 3.2 and add the filter rules file of the attacker website to AdBlock Plus. The victim user then opens and interacts with victim website. When the attacker updates the filter rules file, the victim needs to click the update button in AdBlock Plus's configuration page.
+
+\subsection{Experiment Results}
+
 TODO
+
 \begin{itemize}
 \item Recreating the environment.
 \item Adblock plus version vulnerable, browser version
