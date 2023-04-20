@@ -7,6 +7,9 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\usepackage{verbatim}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -104,8 +107,33 @@ TODO
 \item Potential impact.
 \end{itemize}
 
-\section{Implementation}\label{sec:Implementation}
-% Eric Li: I am editing this section on GitHub, please do not edit this section.
+\section{Implementation}
+\label{sec:Implementation}
+% Author: Eric Li
+
+In this section, we explain how we reproduce the attack. We provide a fully functioning environment for demonstrating this attack. We write two websites using Flask as the attacker and the victim website. We also add CSP logics to demonstrate the recommended mitigation in \cite{abp_code_injection}.
+
+TODO: we make our project open source?
+
+\subsection{Recreating the Environment}
+
+As \cite{abp_code_injection} mentions, the rewrite filter vulnerability is only exploitable on Adblock Plus version between 3.2 and 3.5.1. Thus, the first step for us is to find old version of of this extension. Unfortunately, the official Chrome Web Store and Add-ons for Firefox website no longer provide these versions. So we find old versions from unofficial sources.
+
+We are able to find old version of the extension for Chrome on Crx4Chrome \cite{cr4chrome_abp}, a website that provides archived extensions for Chrome. We are unable to find old version of the extension for Firefox easily. However, we argue that since the extension is designed to be browser-independent, the same attack should work on Firefox and Safari.
+
+Adblock Plus 3.2 cannot be directly installed on the latest version of Chromium, because the extension is packed in a deprecated format and installing the extension triggers the \lstinline{CRX_HEADER_INVALID} error. However, it is possible to extract the packed extension as a ZIP archive file and install the extension to Chromium in developer mode \cite{stackoverflow_crx_header_invalid}.
+
+The problem with Adblock Plus 3.2 is that it uses manifest V2. However, manifest V2 is deprecated and planned to be removed, so Chromium browsers in the future will not be able to install Adblock Plus 3.2 \cite{chrome_manifest_v2}. Thus, we demonstrate that it is possible to install Adblock Plus 3.2 on an old version of Chromium.
+
+\cite{chromium_old_download} provides guidance to download old versions of the Chromium browser. We choose Chromium 69.0.3497, a version released close to the release date of Adblock Plus 3.2.
+Following the guidance, we query the position lookup and find that the branch base position of this version is 576753. Finally, we can download the Chromium browser's snapshot at this version. Adblock Plus 3.2 can be installed directly in Chromium 69, by dragging the CRX package to the browser's extension management page.
+
+In this research, we only test reproducing the attack on Linux. However, since Chromium is a cross-platform browser, we expect the same attack to be reproducible on Windows and macOS.
+
+\subsection{Attacker Website}
+
+\subsection{Victim Website}
+
 TODO
 \begin{itemize}
 \item Recreating the environment.
