@@ -133,7 +133,60 @@ In this research, we only test reproducing the attack on Linux. However, since C
 
 \subsection{Attacker Website}
 
+We implement the attacker website using Flask as the backend. We use plain HTML and JavaScript as the frontend. The attacker website has two features.
+
+First, the attacker website hosts an filter rules file that will be loaded to the victim user's browser. To make demonstration easy, we design an interfaces using HTML and JavaScript to modify the filter rules from a browser. The attacker can choose from any subset of the pre-defined 8 rules:
+
+\begin{enumerate}
+	\item Block advertisement image.
+		% ||*/static/advertisement.png
+	\item Block static JavaScript.
+		% ||*/static/static.js
+	\item Rewrite advertisement image with another image.
+		% ||*/static/advertisement.png$rewrite=/static/welcome.png
+	\item Rewrite XMLHttpRequest (XHR) that sends private information with URL that does not send private information.
+		% ||*/advertisement?city=*&role=*&company=*^$rewrite=/advertisement
+	\item Rewrite static Javacsript.
+		% ||*/static/static.js$rewrite=/static/replace.js
+	\item Rewrite dynamic JavaScript to static file.
+		% ||*/static/dynamic.js$rewrite=/static/replace.js
+	\item Rewrite dynamic JavaScript to redirect URL.
+		% ||*/static/dynamic.js$rewrite=/redirect
+	\item Rewrite dynamic JavaScript to user uploaded file.
+		% ||*/static/dynamic.js$rewrite=/upload/user.js
+\end{enumerate}
+
+Second, the attacker website needs to host the malicious JavaScript payload to be executed on the victim browser. To simplify our design, we host the JavaScript payload statically. The attacker website sets Access-Control-Allow-Origin to \lstinline{"*"} to allow the malicious JavaScript from being read by the victim website on the victim browser.
+
 \subsection{Victim Website}
+
+Similar to the attacker website, we implement the attacker website using Flask as the backend. We use plain HTML and JavaScript as the frontend. The victim website has multiple sections, as discussed below in detail.
+
+\subsubsection{Welcome Image}
+
+The victim website loads a welcome image using HTML's \lstinline{<img>} tag. This provides a image for rewriting the advertisement image later.
+
+\subsubsection{Advertisement Image}
+
+The victim website loads an advertisement image using HTML's \lstinline{<img>} tag. The website also uses JavaScript to detect whether loading the advertisement image is successful. The image is loaded successfully if the \lstinline{load} event listener is called. The image fails to load if the \lstinline{error} event listener is called.
+
+\subsubsection{Targeted Advertisement}
+
+The victim website loads an advertisement using XMLHttpRequest (XHR). The request sends information that undermines the user's privacy, such as the user's location. For demonstration purpose we hard code this information. The server returns an advertisement as a string. The frontend displays the string on HTML.
+
+The purpose of this section is to show that rewrite rules can modify HTTP requests to prevent leakage of users' privacy.
+
+Note that we use XMLHttpRequest (XHR) in the entire demonstration. However, other techniques like fetch also work.
+
+\subsubsection{Static JavaScript}
+
+The victim website loads a JavaScript script statically using the \lstinline{<script>} tag in HTML. The loaded script changes HTML to indicate that the script is loaded correctly. This section demonstrates that Adblock Plus is able to block a static script from loading. However, rewrite rules cannot modify the request to load another script instead.
+
+\subsubsection{Dynamic JavaScript}
+
+TODO
+
+\subsection{Victim User}
 
 TODO
 \begin{itemize}
