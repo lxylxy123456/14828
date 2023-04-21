@@ -194,7 +194,7 @@ The I'm Feeling Lucky button provided by Google Search has this weakness in 2019
 
 \subsubsection{User Uploaded File}
 
-Another weakness of the victim website is user uploaded file with JavaScript content \cite{cwe_upload_file}. The victim website does not perform any sanitization to the file uploaded, and any user of the victim website can view the uploaded file. Thus, if the attacker can trick the victim browser to load the uploaded file, the attacker can achieve arbitrary file execution.
+Another weakness of the victim website is user uploaded file with JavaScript content \cite{cwe_upload_file}. The victim website does not perform any sanitization to the file uploaded, and any user of the victim website can view the uploaded file. Thus, if the attacker can trick the victim browser to load the uploaded file, the attacker can achieve arbitrary code execution.
 
 \subsubsection{CSP}
 
@@ -209,6 +209,44 @@ The attacker user runs any modern browser that can run JavaScript. The attacker 
 We setup the victim user in a Linux virtual machine. The virtual machine runs Chromium 69. We install AdBlock Plus 3.2 and add the filter rules file of the attacker website to AdBlock Plus. The victim user then opens and interacts with victim website. When the attacker updates the filter rules file, the victim needs to click the update button in AdBlock Plus's configuration page.
 
 \subsection{Experiment Results}
+
+Using the setup described above, we perform multiple experiments to demonstrate the capabilities of AdBlock Plus and the arbitrary code execution attack.
+
+\subsubsection{Blocking Image}
+
+AdBlock Plus can block the advertisement image in the victim website. However, the victim website can see that the advertisement image fails to be loaded using the JavaScript \lstinline{error} event listener.
+
+\subsubsection{Blocking Static JavaScript}
+
+AdBlock Plus can block the static JavaScript in the victim website.
+
+\subsubsection{Rewriting Image}
+
+AdBlock Plus can rewrite the advertisement image in the victim website with another image on the victim website. Since the \lstinline{<img>} tag successfully loads an image, the victim website cannot detect the rewrite using the JavaScript \lstinline{error} event listener. This demonstrates that the intended use of the rewrite feature \cite{abp_filter_guide}.
+
+\subsubsection{Rewriting Request Paramters}
+
+AdBlock Plus can rewrite an XHR request to a different URL. In our example, we remove the request URL's query string, which contains private information of the victim user. This is another intended use of the rewrite feature \cite{abp_issue_6622}.
+
+\subsubsection{Rewriting Static JavaScript}
+
+AdBlock Plus is not able to rewrite static JavaScript in the victim website. During the design of the rewrite feature, rewriting static JavaScript is disallowed due to security considerations \cite{abp_issue_6622}.
+
+\subsubsection{Rewriting Dynamic JavaScript}
+
+AdBlock Plus is able to rewrite dynamic JavaScript loaded from XHR request. So when the victim website loads a JavaScript from the its own origin dynamically, AdBlock Plus can change to let it load a different JavaScript from the same origin.
+
+\subsubsection{Attack Using Open Redirect}
+
+A victim website that loads dynamic JavaScript and has the open redirect weakness can be attacked. The attacker first adds AdBlock Plus rule to rewrite the dynamic JavaScript's URL to the open redirect URL. The attacker then controls the open redirect to return HTTP 302 to an attacker-controlled website. The attacker controlled website returns the malicious JavaScript code.
+
+Removing \lstinline{script-src *} from CSP does not defend against this attack. The dynamic JavaScript is downloaded using XHR, which is not controlled by \lstinline{script-src}.
+
+Adding \lstinline{connect-src 'self'} to the CSP defends against this attack. This rule prevents XHR from being redirected to an origin other than the victim website itself. However, this breaks functionality if the victim website needs to send XHR requests to other websites.
+
+\subsubsection{Attack Using User Uploaded File}
+
+A victim website that loads dynamic JavaScript and has the user uploaded file with JavaScript content weakness can be attacked.
 
 TODO
 
@@ -229,6 +267,7 @@ TODO
 \item Public warnings previous the deploy of the \$rewrite feature.
 \item Limitations: downgrade of browser version was needed.
 \item Limitations: further analysis on other browsers.
+\item Possible mitigation: check signature of dynamic JS before eval.
 \end{itemize}
 
 \section{Related Work}
