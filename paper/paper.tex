@@ -109,7 +109,6 @@ TODO
 
 \section{Implementation}
 \label{sec:Implementation}
-% Eric Li: I am editing this section on GitHub, please do not edit this section.
 % Author: Eric Li
 
 In this section, we explain how we reproduce the attack. We provide a fully functioning environment for demonstrating this attack. We write two websites using Flask as the attacker and the victim website. We also add Content Security Policy (CSP) logics to demonstrate the recommended mitigation in \cite{abp_code_injection}.
@@ -242,22 +241,25 @@ A victim website that loads dynamic JavaScript and has the open redirect weaknes
 
 Removing \lstinline{script-src *} from CSP does not defend against this attack. The dynamic JavaScript is downloaded using XHR, which is not controlled by \lstinline{script-src}.
 
-Adding \lstinline{connect-src 'self'} to the CSP defends against this attack. This rule prevents XHR from being redirected to an origin other than the victim website itself. However, this breaks functionality if the victim website needs to send XHR requests to other websites.
+Adding \lstinline{connect-src 'self'} to CSP defends against this attack. This rule prevents XHR from being redirected to an origin other than the victim website itself. However, this breaks functionality if the victim website needs to send XHR requests to other websites.
 
 \subsubsection{Attack Using User Uploaded File}
 
-A victim website that loads dynamic JavaScript and has the user uploaded file with JavaScript content weakness can be attacked.
+A victim website that loads dynamic JavaScript and has the user uploaded file with JavaScript content weakness can be attacked. The attacker first uploads the malicious JavaScript file to the victim website. The attacker then adds AdBlock Plus rule to rewrite the dynamic JavaScript's URL to the uploaded file.
 
-TODO
+Neither removing \lstinline{script-src *} from the CSP nor adding \lstinline{connect-src 'self'} to CSP to CSP defends against this attack. The original dynamic JavaScript and the attacker uploaded file are both in the victim website's origin. Thus, blocking loading scripts from the victim website's origin will break the victim website's functionality.
 
-\begin{itemize}
-\item Recreating the environment.
-\item Adblock plus version vulnerable, browser version
-\item Attacker’s website.
-\item Victim’s website.
-\item CSP policies.
-\end{itemize}
-% Eric Li: I am editing this section on GitHub, please do not edit this section.
+\subsection{Reproducibility Analysis}
+
+To investigate the software versions this attack can take place, we try our experiment in different versions of Chromium and AdBlock Plus.
+
+We see that this attack is successful regardless of the Chromium version, as long as AdBlock Plus can be installed on Chromium. This attack works on both Chromium 69 (released in 2018) and Chromium 112 (released in 2023).
+
+We verify the reproducible AdBlock Plus version range mentioned in \cite{abp_code_injection}. The attack does not work on AdBlock Plus 3.1 (released in May 2018), which does not introduce the rewrite feature yet. This attack works on AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019). This attack does not work on AdBlock Plus 3.5.2 (released in April 2019), when the rewrite feature is redesigned to prevent the attack \cite{cr4chrome_abp}.
+
+We also try reproducing this attack on other vulnerable advertisement blockers mentioned in \cite{abp_code_injection}, including AdBlock and uBlock. We are not able to reproduce on uBlock. For unknown reason uBlock does not recognize any custom filter rules we write.
+
+We are able to reproduce this attack on AdBlock, and the reproducible version range agrees with \cite{abp_code_injection}. The attack does not work on AdBlock 3.31.2 (released in June 2018), which does not introduce the rewrite feature yet. The attack works on AdBlock 3.32.0 (released in July 2018) and 3.44.0 (released in April 2019). This vulnerability is fixed in AdBlock 3.46.0 (releaesd in April 2019) \cite{cr4chrome_ab}.
 
 \section{Discussion and Limitations}
 TODO
