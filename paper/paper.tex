@@ -262,14 +262,57 @@ We also try reproducing this attack on other vulnerable advertisement blockers m
 We are able to reproduce this attack on AdBlock, and the reproducible version range agrees with \cite{abp_code_injection}. The attack does not work on AdBlock 3.31.2 (released in June 2018), which does not introduce the rewrite feature yet. The attack works on AdBlock 3.32.0 (released in July 2018) and 3.44.0 (released in April 2019). This vulnerability is fixed in AdBlock 3.46.0 (releaesd in April 2019) \cite{cr4chrome_ab}.
 
 \section{Discussion and Limitations}
+
+\subsection{Warnings During Design Phase}
+
 TODO
+
 \begin{itemize}
-\item How Google mitigated the issue.
-\item How Adblock Plus defended (limits the ability of filter rules).
 \item Public warnings previous the deploy of the \$rewrite feature.
+\end{itemize}
+
+\subsection{Mitigation by Google}
+% Author: Eric Li
+
+When AdBlock Plus 3.2 is published in 2018, Google is vulnerable to this attack because Google Maps loads dynamic JavaScript, and Google's I'm Feeling Lucky provides an open redirect weakness.
+
+Google does not mitigate this attack by removing the dynamic JavaScript. As of April 2023, Google Maps still loads dynamic JavaScript. The CSP of Google Maps contains \lstinline{script-src 'unsafe-eval'}, which is required for calling \lstinline{eval()}.
+
+Google mitigates this attack by removing the open redirect \cite{superuser_ifl_redir_notice}. Google uses the NID cookie to identify different users \cite{google_cookies}. When the user clicks the I'm Feeling Lucky button, Google computes a signature that includes the search query and a secret related to the user. The signature is included in the HTTP request in the \lstinline{iflsig} query field. If the signature verifies, the Google Search server returns HTTP 302 redirect. Otherwise, the server returns an HTML page asking the user to confirm the redirection.
+
+We think this defense is effective. When an attacker constructs the malicious AdBlock Plus rule, he or she cannot compute the signature required for the \lstinline{iflsig} query field. It is possible to compute the signature if the attacker is able to inject cookies to the victim user's browser and overwrites the NID cookie. However, we think this attack is out of scope.
+
+\subsection{Defense by Adblock Plus}
+
+TODO
+
+\begin{itemize}
+\item How Adblock Plus defended (limits the ability of filter rules).
+\end{itemize}
+
+\subsection{Proposed Mitigation}
+% Author: Eric Li
+
+We propose another way for websites to mitigate against this attack, even though the users uses a vulnerable extension like AdBlock Plus 3.2. We mitigate through the process of loading the dynamic JavaScript. Instead of executing whatever string returned in the HTTP response, the victim website should cryptographically verify the dynamic JavaScript fetched from the server.
+
+One possible way to implement asymmetric signatures. The victim server holds a public key and private key pair. When the victim browser loads the victim website, the victim server sends the public key to the victim browser through static JavaScript. When the victim browser requests dynamic JavaScript, the victim server sends the JavaScript content and signs hash of the content using the secret key. The victim browser verifies the signature before calling \lstinline{eval()} on the dynamic JavaScript content.
+
+The disadvantage of this mitigation is that both the server and the browser requires additional computation power and time to compute the cryptographic signature. This will likely increase the delay in the user interaction.
+
+\subsection{Limitations}
+
+TODO
+
+\begin{itemize}
+\item Limitations: downgrade of browser version was needed (only for manifest v3)
+\end{itemize}
+
+\subsection{Future Work}
+
+TODO
+
+\begin{itemize}
 \item Limitations: downgrade of browser version was needed.
-\item Limitations: further analysis on other browsers.
-\item Possible mitigation: check signature of dynamic JS before eval.
 \end{itemize}
 
 \section{Related Work}
