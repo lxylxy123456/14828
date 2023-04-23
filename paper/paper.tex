@@ -189,7 +189,7 @@ The victim website loads a JavaScript script dynamically when the user clicks a 
 
 One weakness of the victim website is open redirect, where any user can define HTTP redirects in the website \cite{cwe_open_redir}. In the victim website, the attacker can control the URL \lstinline{/redirect} to return an HTTP 302 to any URL. Example URL include a JavaScript on the victim website and a JavaScript on the attacker website.
 
-The I'm Feeling Lucky button provided by Google Search has this weakness in 2019. When the user clicks the button, the website sends a GET request to Google's server. The request contains the user's query and \lstinline{btnI} parameter to indicate the user clicks the I'm Feeling Lucky button. Google's server returns an HTTP 302 response to the first Google Search result. An attacker can use this feature as an open redirect. The attacker simply needs to construct a Google Search query that places the redirect target as the first Google Search result. This weakness is fixed by Google later, as discussed in TODO.
+The I'm Feeling Lucky button provided by Google Search has this weakness in 2019. When the user clicks the button, the website sends a GET request to Google's server. The request contains the user's query and \lstinline{btnI} parameter to indicate the user clicks the I'm Feeling Lucky button. Google's server returns an HTTP 302 response to the first Google Search result. An attacker can use this feature as an open redirect. The attacker simply needs to construct a Google Search query that places the redirect target as the first Google Search result. This weakness is fixed by Google later, as discussed in Section~\ref{subsec:google_mitigate}.
 
 \subsubsection{User Uploaded File}
 
@@ -272,6 +272,7 @@ TODO
 \end{itemize}
 
 \subsection{Mitigation by Google}
+\label{subsec:google_mitigate}
 % Author: Eric Li
 
 When AdBlock Plus 3.2 is published in 2018, Google is vulnerable to this attack because Google Maps loads dynamic JavaScript, and Google's I'm Feeling Lucky provides an open redirect weakness.
@@ -299,21 +300,14 @@ One possible way to implement asymmetric signatures. The victim server holds a p
 
 The disadvantage of this mitigation is that both the server and the browser requires additional computation power and time to compute the cryptographic signature. This will likely increase the delay in the user interaction.
 
-\subsection{Limitations}
+\subsection{Limitations and Future Work}
+% Author: Eric Li
 
-TODO
+In this research, we only investigate the Chromium browser. The main reason is that Chromium browser is popular and old versions of Chrome extensions can be easily downloaded from third party archives. Though we expect other browsers like Firefox and Safari to behave the same, future work is needed to verify this behavior. We expect compiling AdBlock Plus from source when testing on other browsers.
 
-\begin{itemize}
-\item Limitations: downgrade of browser version was needed (only for manifest v3)
-\end{itemize}
+In this research, we also investigate the Linux operating system. Future work is expected to verify whether the attack still works on other operating systems like Windows and macOS.
 
-\subsection{Future Work}
-
-TODO
-
-\begin{itemize}
-\item Limitations: downgrade of browser version was needed.
-\end{itemize}
+Since AdBlock Plus 3.2 uses manifest V2, the reproducibility of our demo depends on the browser supporting manifest V2. Chrome is in the process of ending support for manifest V2, but the exact timeline is not determined as of this research \cite{chrome_manifest_v2}. Thus, to reproduce this demo in the future when only manifest V3 is supported, the the Chromium browser must be downgraded.
 
 \section{Related Work}
 TODO
