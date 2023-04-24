@@ -49,12 +49,13 @@ jobs:
         path: pdf
     - name: Push
       run: |
-        ln -f paper/paper.pdf pdf/paper-"$GITHUB_REF_NAME".pdf
+        REF_NAME="`echo $GITHUB_REF_NAME | sed 's|/|-|g'`"
+        ln -f paper/paper.pdf pdf/paper-"$REF_NAME".pdf
         cd pdf
-        git add paper-"$GITHUB_REF_NAME".pdf
+        git add paper-"$REF_NAME".pdf
         git config user.email "actions@git.hub"
         git config user.name "GitHub Actions"
-        git commit -m "Auto generated from $GITHUB_REF_NAME $GITHUB_SHA"
+        git commit -m "Auto generated from $REF_NAME $GITHUB_SHA"
         git push
         git log -1
 
