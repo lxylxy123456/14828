@@ -31,7 +31,7 @@ jobs:
       run: |
         sudo apt-get update && \
         sudo apt-get install \
-                      texlive \
+                      texlive texlive-science \
                       -y
     - name: Build
       run: |
