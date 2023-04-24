@@ -94,10 +94,14 @@ Another potential way of using the rewrite filter is eliminating certain HTTP re
 % Author: Chengcheng Ding
 There are mainly 2 goals for this project, centered around the vulnerability introduced by the first implementation of the rewrite rule, and its implications.
 
-The first goal is to prove that the vulnerability implies a previously understated attack surface. The vulnerability's chain of exploits utilizes vulnerabilities, or even features, that would be considered low-impact or no-impact on their own. For example, a crucial component of this vulnerability, open redirect, would be considered a feature instead of a vulnerability in many websites. As a matter of fact, Google is still choosing to keep its open redirects while acknowledging it can be a tool for phishers.\cite{noauthor_open_nodate}
+The first goal is to prove that the vulnerability implies a previously understated attack surface. The vulnerability's chain of exploits utilizes vulnerabilities, or even features, that would be considered low-impact or no-impact on their own. For example, a crucial component of this vulnerability, open redirect, would be considered a feature instead of a vulnerability in many websites. As a matter of fact, Google doesn't consider open redirects to be a security vulnerability to be accepted as part of its Vulnerability Disclosure Program, even while acknowledging it can be a tool for phishers.\cite{noauthor_open_nodate}
 
 The second goal of this project is to recreate a proof of concept of the attack scenario. The proof of concept will specify the versions of all of the related software, and provide a skeleton website to demonstrate the capabilities of the attack. The details of the proof of concept can be found in Section \ref{sec:Implementation}.
 
+\section{Threat model}
+The threat model implies a remote attacker with the ability to abuse the rewrite filter of Adblock Plus installed in the victim's browser. In this scenario, the attacker may be an insider employee of Adblock Plus or an open-source malicious contributor to its codebase. In both cases, the attacker needs to include a malicious rewrite rule in the preinstalled filter lists that are enabled by default when installing the extension. An alternative scenario would be a malicious actor that convinces the victim to install and enable a malicious filter that includes a malicious rewrite rule in it. Eyeo, the company behind Adblock Plus, makes it clear that the filters are maintained by third parties (even the defaults ones that come preinstalled when installing the extension) and that they neither have control over their contents nor are responsible for any damage provoked to the user in relation to them \cite{abp_suscriptions}.
+
+The victim needs to have installed a vulnerable version of Adblock Plus in the browser, with the malicious filter enabled. For the attack to succeed the victim needs to visit the page that will be rewritten by the malicious rewrite filter.	
 \section{Attack Outline}
 TODO
 \begin{itemize}
