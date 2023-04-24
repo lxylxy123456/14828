@@ -1,0 +1,60 @@
+#
+#   Demo of Arbitrary Code Injection in Adblock Plus
+#   Copyright (C) 2023  Eric Li, Teresa Alberto, and Chengcheng Ding
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published
+#   by the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+
+name: Render Paper
+
+on: ["push", "pull_request"]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: apt-get
+      run: |
+        sudo apt-get update && \
+        sudo apt-get install \
+                      texlive texlive-fonts-extra texlive-science \
+                      -y
+    - name: Build
+      run: |
+        cd paper
+        make
+    - name: Release
+      uses: actions/upload-artifact@v3
+      with:
+        name: paper
+        path: |
+          paper/paper.pdf
+    - uses: actions/checkout@v3
+      with:
+        ref: pdf
+        path: pdf
+    - name: Push
+      run: |
+        ln -f paper/paper.pdf pdf/paper-"$GITHUB_REF_NAME".pdf
+        cd pdf
+        git add paper-"$GITHUB_REF_NAME".pdf
+        git config user.email "actions@git.hub"
+        git config user.name "GitHub Actions"
+        git commit -m "Auto generated from $GITHUB_REF_NAME $GITHUB_SHA"
+        git push
+        git log -1
+
