@@ -64,8 +64,8 @@ useful links and hints.
 Second, install old version of AdBlock Plus extension for Chrome / Chromium.
 The version range is 3.2 - 3.5.1 (inclusive). You can likely find this in
 Crx4Chrome: <https://www.crx4chrome.com/history/31928/>.
-For reproducibility, we archive (AdBlock Plus version
-3.2)[https://f6.crx4chrome.com/crx.php?i=cfhdojbkjhnklbpkdaibdccddilifddb&v=3.2]
+For reproducibility, we archive [AdBlock Plus version
+3.2](https://f6.crx4chrome.com/crx.php?i=cfhdojbkjhnklbpkdaibdccddilifddb&v=3.2)
 at:
 <https://web.archive.org/web/20230424203100/https://f6.crx4chrome.com/crx.php?i=cfhdojbkjhnklbpkdaibdccddilifddb&v=3.2>.
 
