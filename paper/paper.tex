@@ -123,7 +123,7 @@ TODO: we make our project open source?
 
 As \cite{abp_code_injection} mentions, the rewrite filter vulnerability is only exploitable on Adblock Plus version between 3.2 and 3.5.1. Thus, the first step for us is to find old version of of this extension. Unfortunately, the official Chrome Web Store and Add-ons for Firefox website no longer provide these versions. So we find old versions from unofficial sources.
 
-We are able to find old version of the extension for Chrome on Crx4Chrome \cite{cr4chrome_abp}, a website that provides archived extensions for Chrome. We are unable to find old version of the extension for Firefox easily. However, we argue that since the extension is designed to be browser-independent, the same attack should work on Firefox and Safari.
+We are able to find old version of the extension for Chrome on Crx4Chrome \cite{cr4chrome_abp}, a website that provides archived extensions for Chrome. We are unable to find old version of the extension for Firefox easily. However, we argue that since the extension is designed to be browser-independent, the same attack should work on Firefox, Safari, and Edge.
 
 Adblock Plus 3.2 cannot be directly installed on the latest version of Chromium, because the extension is packed in a deprecated format and installing the extension triggers the \lstinline{CRX_HEADER_INVALID} error. However, it is possible to extract the packed extension as a ZIP archive file and install the extension to Chromium in developer mode \cite{stackoverflow_crx_header_invalid}.
 
@@ -259,11 +259,11 @@ To investigate the software versions this attack can take place, we try our expe
 
 We see that this attack is successful regardless of the Chromium version, as long as AdBlock Plus can be installed on Chromium. This attack works on both Chromium 69 (released in 2018) and Chromium 112 (released in 2023).
 
-We verify the reproducible AdBlock Plus version range mentioned in \cite{abp_code_injection}. The attack does not work on AdBlock Plus 3.1 (released in May 2018), which does not introduce the rewrite feature yet. This attack works on AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019). This attack does not work on AdBlock Plus 3.5.2 (released in April 2019), when the rewrite feature is redesigned to prevent the attack \cite{cr4chrome_abp}.
+We verify the reproducible AdBlock Plus version range mentioned in \cite{abp_code_injection}. The attack does not work on AdBlock Plus 3.1 (released in May 2018), which does not introduce the rewrite feature yet. This attack works on AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019). We assume this attack works on the versions in between. This attack does not work on AdBlock Plus 3.5.2 (released in April 2019), when the rewrite feature is redesigned to prevent the attack \cite{cr4chrome_abp}.
 
 We also try reproducing this attack on other vulnerable advertisement blockers mentioned in \cite{abp_code_injection}, including AdBlock and uBlock. We are not able to reproduce on uBlock. For unknown reason uBlock does not recognize any custom filter rules we write.
 
-We are able to reproduce this attack on AdBlock, and the reproducible version range agrees with \cite{abp_code_injection}. The attack does not work on AdBlock 3.31.2 (released in June 2018), which does not introduce the rewrite feature yet. The attack works on AdBlock 3.32.0 (released in July 2018) and 3.44.0 (released in April 2019). This vulnerability is fixed in AdBlock 3.46.0 (releaesd in April 2019) \cite{cr4chrome_ab}.
+We are able to reproduce this attack on AdBlock, and the reproducible version range agrees with \cite{abp_code_injection}. The attack does not work on AdBlock 3.31.2 (released in June 2018), which does not introduce the rewrite feature yet. The attack works on AdBlock 3.32.0 (released in July 2018) and 3.44.0 (released in April 2019). We assume this attack works on the versions in between. This vulnerability is fixed in AdBlock 3.46.0 (releaesd in April 2019) \cite{cr4chrome_ab}.
 
 \section{Discussion and Limitations}
 
@@ -307,7 +307,7 @@ The disadvantage of this mitigation is that both the server and the browser requ
 \subsection{Limitations and Future Work}
 % Author: Eric Li
 
-In this research, we only investigate the Chromium browser. The main reason is that Chromium browser is popular and old versions of Chrome extensions can be easily downloaded from third party archives. Though we expect other browsers like Firefox and Safari to behave the same, future work is needed to verify this behavior. We expect compiling AdBlock Plus from source when testing on other browsers.
+In this research, we only investigate the Chromium browser. The main reason is that Chromium browser is popular and old versions of Chrome extensions can be easily downloaded from third party archives. Though we expect other browsers like Firefox, Safari, and Edge to behave the same, future work is needed to verify this behavior. We expect compiling AdBlock Plus from source when testing on other browsers.
 
 In this research, we also investigate the Linux operating system. Future work is expected to verify whether the attack still works on other operating systems like Windows and macOS.
 
@@ -329,7 +329,22 @@ TODO
 \bibliography{references}
 
 \appendix
-TODO: respond to peer review
+
+This section records our responds to the peer review.
+
+% Author: Eric Li
+The first comment is about the replace script changing both static JS and dynamic JS's HTML elements, which creates confusion. As a response, we modify the demo to only change one of static JS and dynamic JS.
+
+% Author: Eric Li
+The second comment is about Section \ref{sec:Implementation} mentioning only the start and end version of vulnerable extensions, without mentioning the versions in between. The peer reviewer suggests changing the sentences to ``between version X and Y.'' However, we choose to keep our writing because we want to only report what we tested. We add a sentence to state that the versions in between are assumed to be reproducible, though we did not test them.
+
+The third comment is about the business model in the final presentation. TODO
+
+% Author: Eric Li
+The fourth comment is about the Brave browser. We consider the Brave browser as out of scope. Through superficial research on its code base, it seems this browser implements advertisement blocking logic through Rust, which is different from AdBlock Plus. The advertisement blocking code does not contain the keyword ``rewrite'' in the context of the rewrite feature discussed in this paper, so we think Brave browser is not vulnerable.
+
+% Author: Eric Li
+The fifth comment is about Microsoft Edge. In our older draft of the paper we only mention Chrome (Chromium), Firefox, and Safari. We modify the paper to add Edge, since Edge is also a popular browser.
 
 \end{document}
 
