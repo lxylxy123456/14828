@@ -117,7 +117,7 @@ TODO
 
 In this section, we explain how we reproduce the attack. We provide a fully functioning environment for demonstrating this attack. We write two websites using Flask as the attacker and the victim website. We also add Content Security Policy (CSP) logics to demonstrate the recommended mitigation in \cite{abp_code_injection}.
 
-TODO: we make our project open source?
+To help future researchers reproduce this attack, our project is open source at https://github.com/lxylxy123456/14828. We try to make our work reproducible, such as by providing exact versions of software we use.
 
 \subsection{Recreating the Environment}
 
@@ -344,7 +344,7 @@ The third comment is about the business model in the final presentation. TODO
 The fourth comment is about the Brave browser. We consider the Brave browser as out of scope. Through superficial research on its code base, it seems this browser implements advertisement blocking logic through Rust, which is different from AdBlock Plus. The advertisement blocking code does not contain the keyword ``rewrite'' in the context of the rewrite feature discussed in this paper, so we think Brave browser is not vulnerable.
 
 % Author: Eric Li
-The fifth comment is about Microsoft Edge. In our older draft of the paper we only mention Chrome (Chromium), Firefox, and Safari. We modify the paper to add Edge, since Edge is also a popular browser.
+The fifth comment is about Microsoft Edge. In our older draft of the paper we only mention Chrome (Chromium), Firefox, and Safari. We modify the paper to add Edge, since Edge is also a popular browser. We still assume the attack works on Edge with out actually testing, because as far as we know, Edge only works on Windows, but we are testing on Linux.
 
 \end{document}
 
