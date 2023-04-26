@@ -150,9 +150,9 @@ First, the attacker website hosts an filter rules file that will be loaded to th
 	\item Rewrite XMLHttpRequest (XHR) that sends private information with URL that does not send private information.
 		% ||*/advertisement?city=*&role=*&company=*^$rewrite=/advertisement
 	\item Rewrite static Javacsript.
-		% ||*/static/static.js$rewrite=/static/replace.js
+		% ||*/static/static.js$rewrite=/static/static-replace.js
 	\item Rewrite dynamic JavaScript to static file.
-		% ||*/static/dynamic.js$rewrite=/static/replace.js
+		% ||*/static/dynamic.js$rewrite=/static/dynamic-replace.js
 	\item Rewrite dynamic JavaScript to redirect URL.
 		% ||*/static/dynamic.js$rewrite=/redirect
 	\item Rewrite dynamic JavaScript to user uploaded file.

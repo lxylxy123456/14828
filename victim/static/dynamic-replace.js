@@ -16,9 +16,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-document.getElementById("sjs").innerText = "REPLACED JS";
-document.getElementById("sjs").className = "warn";
-
 document.getElementById("djs").innerText = "REPLACED JS";
 document.getElementById("djs").className = "warn";
 

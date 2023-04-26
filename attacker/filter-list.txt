@@ -3,7 +3,7 @@
 ||*/static/static.js
 ||*/static/advertisement.png$rewrite=/static/welcome.png
 ||*/advertisement?*^$rewrite=/advertisement
-||*/static/static.js$rewrite=/static/replace.js
-||*/static/dynamic.js$rewrite=/static/replace.js
+||*/static/static.js$rewrite=/static/static-replace.js
+||*/static/dynamic.js$rewrite=/static/dynamic-replace.js
 ||*/static/dynamic.js$rewrite=/redirect
 ||*/static/dynamic.js$rewrite=/upload/user.js

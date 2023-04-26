@@ -16,6 +16,6 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-document.getElementById("djs").innerText = "EXPLOITED EXPLOITED EXPLOITED";
-document.getElementById("djs").className = "fail";
+document.getElementById("sjs").innerText = "REPLACED JS";
+document.getElementById("sjs").className = "warn";
 

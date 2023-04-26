@@ -33,7 +33,7 @@ csp_list = [
 	[True, "base-uri 'none';"],
 	[False, "connect-src 'self';"],
 ]
-redir_url = '/static/replace.js'
+redir_url = '/static/dynamic-replace.js'
 user_js = ''
 global_lock = Lock()
 
