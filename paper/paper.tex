@@ -9,6 +9,14 @@
 \usepackage{xcolor}
 \usepackage{verbatim}
 \usepackage{listings}
+% To enable subfigures
+\usepackage{caption}
+\usepackage{subcaption}
+% To prevent URL in bibliographic overflowing to second column
+\usepackage[hyphens]{url}
+
+\graphicspath{ {./images/} }
+
 \lstset{basicstyle=\ttfamily, upquote=true}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -54,13 +62,13 @@ browser security, browser extension, ad blocking, XSS
 
 \section{Introduction}
 % Author: Chengcheng Ding
-Since the very beginning of their introduction, browser extensions expose additional attack surfaces for browsers. Their popularity among users only makes the matter worse: a vulnerability in a popular extension can affect millions of users. One such popular extension is Adblock Plus, which has tens of millions of users on Chrome and Firefox combined \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate}. In this article, we will investigate a vulnerability introduced in a previous version of Adblock Plus that enabled the execution of arbitrary code on users' devices.
+Since the very beginning of their introduction, browser extensions expose additional attack surfaces for browsers. Their popularity among users only makes the matter worse: a vulnerability in a popular extension can affect millions of users. One such popular extension is Adblock Plus, which has tens of millions of users on Chrome and Firefox combined \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate}. In this article, we will investigate a vulnerability introduced in version 3.2 of Adblock Plus that enabled the execution of arbitrary code on users' devices.
 
-Adblock Plus has a very well-intended feature that allows users to apply custom filter rules. To do so, users can supply a text file that provides (a list of) rule(s) written in the syntax specified by Adblock Plus. Similarly, users can also apply custom filter rules crafted by others to their Adblock Plus extensions. This introduced another party in the threat model.
+The power of Adblock Plus, and any other ad-blocking extension, comes from its filter lists. These lists are composed of a series of URLs with tracking and advertising capabilities, that when visited by the user the extension prevent from loading. Adblock comes with a series of filter lists installed and enabled by default, customized according to the language of the user. In addition, Adblock Plus has a very well-intended feature that allows users to apply custom filter rules. To do so, users can supply a text file that provides (a list of) rule(s) written in the syntax specified by Adblock Plus. Similarly, users can also apply custom filter rules crafted by others to their Adblock Plus extensions. This introduced another party in the threat model.
 
 A standard custom filter rule mentioned above consists of 2 items:
 \begin{enumerate}
-    \item A pattern of URIs. All requests made to a URI that fits such a pattern will be filtered
+    \item A pattern of URIs. All requests made to a URI that fits such a pattern will be filtered.
     \item The action to the request that will be filtered. The most obvious and straightforward example would be blocking that request.
 \end{enumerate}
 
@@ -68,8 +76,8 @@ In Adblock Plus version 3.2, released on July 17, 2018, a new option for filter 
 
 We contribute the following:
 \begin{enumerate}
-    \item An explanation of the technology details behind the attack.
-    \item A detailed guide to re-implementing the attack, that specifies corresponding versions of the products related, and a demo website that showcases the attack.
+    \item An explanation of the technical details behind the attack.
+    \item A detailed guide to re-implementing the attack, that specifies corresponding versions of the browser and the extension necessary for the attack to succeed, and a demo website that showcases the attack.
     \item What we can learn from this vulnerability: its impacts, and what vendors can do to mitigate against it.
 \end{enumerate}
 
@@ -77,6 +85,11 @@ We contribute the following:
 \subsection{Massive Adaptation of Ad-Blocking Extensions}
 % Author: Chengcheng Ding
 Extensions play a critical role in the capabilities of modern browsers, enabling customized web experiences. Among them is a popular category of extensions that blocks advertisements on web pages. One of the most popular in that category is Adblock Plus. According to statistics from the Chrome extensions web store and Mozilla Firefox add-on store, tens of millions of users have Adblock Plus installed \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate}. According to a study by Pujol et al., 22\% of the most active users analyzed browse the Web with Adblock Plus. In fact, Ad-blocking extensions are so popular that advertisement vendors have begun to take active measures against them \cite{mughees_first_2016}. Therefore, vulnerabilities from the Adblock Plus extension can impact a considerable amount of internet users. That is why we have chosen to investigate a vulnerability in a previous version of Adblock Plus.
+
+\subsection{Adblock Plus business model}
+According to Alphabet's financial report, in the last quarter of 2022, the company had a revenue of more than 59,000 million dollars under the category of advertising \cite{alphabet_revenue}. The figures that the online advertising industry manages show why there is a fierce fight between publisher of contents, ad networks and ad-blocking software. Eyeo GmbH business model is not exempt from this dispute. As part of their business model, the company charges fees to big companies to be included in an allow-list as long as the advertisement on their webpages is considered as "acceptable ads". This category is defined by an "acceptable Ads Committee" created by Adblock's company that counts on the presence of several stakeholders such as Amazon and Dell. The acceptable criteria of an ad depends on its placement on a page, its size and its being distinctive from the main content of the page \cite{acceptable_ads}. Although these commercial deals are not public, the Financial Times published that the fee that Adblock Plus charges to the big companies for being in the whitelist is approximately 30\% of the ad revenues archived by unblocked ads on those sites \cite{financial_times}. 
+A caveat related to the links between the stakeholders of the ad industry is that since 2022, the new CEO of Eyeo GmbH is Frank Einecke, a former executive of Google for 14 years.
+
 
 \subsection{Custom Filters in Adblock Plus}
 % Author: Chengcheng Ding
@@ -99,13 +112,17 @@ The first goal is to prove that the vulnerability implies a previously understat
 The second goal of this project is to recreate a proof of concept of the attack scenario. The proof of concept will specify the versions of all of the related software, and provide a skeleton website to demonstrate the capabilities of the attack. The details of the proof of concept can be found in Section \ref{sec:Implementation}.
 
 \section{Threat model}
-The threat model implies a remote attacker with the ability to abuse the rewrite filter of Adblock Plus installed in the victim's browser. In this scenario, the attacker may be an insider employee of Adblock Plus or an open-source malicious contributor to its codebase. In both cases, the attacker needs to include a malicious rewrite rule in the preinstalled filter lists that are enabled by default when installing the extension. An alternative scenario would be a malicious actor that convinces the victim to install and enable a malicious filter that includes a malicious rewrite rule in it. Eyeo, the company behind Adblock Plus, makes it clear that the filters are maintained by third parties (even the defaults ones that come preinstalled when installing the extension) and that they neither have control over their contents nor are responsible for any damage provoked to the user in relation to them \cite{abp_suscriptions}.
+The threat model implies a remote attacker with the ability to abuse the rewrite rule of Adblock Plus installed in the victim's browser. There are several possible scenarios for this to happen. First, Adblock Plus is an open-source tool, so a contributor may include a malicious rewrite rule to this open-source codebase being undetected. In addition, the extension comes with several filter rules installed by default, among those is EasyList, a series of filters written by the community. The EasyList file that comes preinstalled with Adblock Plus for English speakers has a total of 58,656 lines, what makes the inclusion of a malicious rule yet more feasible \cite{EasyList}. A second option is an insider threat inside Adblock Plus company to include the malicious rule if enough incentives are offered. Given the number of installations of the extension, an attacker could offer enough economic incentives in exchange of infecting millions of users. A variation of this scenario may happen if a developer of Adblock Plus sees his/her equipment or credentials compromised. In both cases, the attacker needs to include a malicious rewrite rule in the preinstalled filter lists that are enabled by default when installing the extension. 
+An alternative scenario would be a malicious actor that convinces the victim to install and enable a malicious filter that includes a malicious rewrite rule in it. Eyeo, the company behind Adblock Plus, makes it clear that the filters are maintained by third parties (even the defaults ones that come preinstalled when installing the extension) and that they neither have control over their contents nor are responsible for any damage provoked to the user in relation to them \cite{abp_suscriptions}.
 
-The victim needs to have installed a vulnerable version of Adblock Plus in the browser, with the malicious filter enabled. For the attack to succeed the victim needs to visit the page that will be rewritten by the malicious rewrite filter.	
+The victim user needs to have installed a vulnerable version of Adblock Plus in the browser, with the malicious filter enabled. For the attack to succeed the victim needs to visit the page that will be rewritten by the malicious rewrite filter.	
+
+Finally, for the attack to succeed the website that the victim will be visiting needs to fetch resources and load them in the webpage while exposing an open redirect in their website.
+
 \section{Attack Outline}
-TODO
+The threat model can be schematized in an attack outline where each actor involved fulfills the following requirements.
 \begin{itemize}
-\item Victim website: Open redirect combined with fetching and loading JS code provokes worse problems.
+\item Victim website: open redirect combined with fetching and loading JS code provokes worse problems.
 \item Victim user: install malicious filter list (may be updated automatically), visit victim website.
 \item Attacker: control the malicious filter list.
 \item Potential impact.
@@ -243,6 +260,27 @@ AdBlock Plus is able to rewrite dynamic JavaScript loaded from XHR request. So w
 
 A victim website that loads dynamic JavaScript and has the open redirect weakness can be attacked. The attacker first adds AdBlock Plus rule to rewrite the dynamic JavaScript's URL to the open redirect URL. The attacker then controls the open redirect to return HTTP 302 to an attacker-controlled website. The attacker controlled website returns the malicious JavaScript code.
 
+\begin{figure}[htp]
+     \centering
+     \begin{subfigure}[b]{0.5\textwidth}
+         \centering
+         \includegraphics[width=.9\textwidth]{2-figure}
+         \caption{Without the malicious filter, the dynamic JavaScript is loaded on the page.}
+         \label{fig:non-vulnerable}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.5\textwidth}
+         \centering
+         \includegraphics[width=.9\textwidth]{1-figure}
+         \caption{With the malicious filter enabled,  AdBlock Plus rewrites the dynamic JavaScript's URL to the open redirect URL, which returns malicious JS code.}
+         \label{fig:vulnerable}
+     \end{subfigure}
+        \caption{Screenshots of a proof of concept website demonstrating the capabilities of the attack.}
+        \label{fig:poc}
+\end{figure}
+
+Figure \ref{fig:poc} shows a proof of concept website demonstrating in Figure \ref{fig:non-vulnerable} dynamic JS being loaded in a victim's page and in Figure \ref{fig:vulnerable} the same website with the injected attacker's script after the malicious filter is enabled.
+
 Removing \lstinline{script-src *} from CSP does not defend against this attack. The dynamic JavaScript is downloaded using XHR, which is not controlled by \lstinline{script-src}.
 
 Adding \lstinline{connect-src 'self'} to CSP defends against this attack. This rule prevents XHR from being redirected to an origin other than the victim website itself. However, this breaks functionality if the victim website needs to send XHR requests to other websites.
@@ -261,19 +299,18 @@ We see that this attack is successful regardless of the Chromium version, as lon
 
 We verify the reproducible AdBlock Plus version range mentioned in \cite{abp_code_injection}. The attack does not work on AdBlock Plus 3.1 (released in May 2018), which does not introduce the rewrite feature yet. This attack works on AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019). We assume this attack works on the versions in between. This attack does not work on AdBlock Plus 3.5.2 (released in April 2019), when the rewrite feature is redesigned to prevent the attack \cite{cr4chrome_abp}.
 
-We also try reproducing this attack on other vulnerable advertisement blockers mentioned in \cite{abp_code_injection}, including AdBlock and uBlock. We are not able to reproduce on uBlock. For unknown reason uBlock does not recognize any custom filter rules we write.
+We also try reproducing this attack on other vulnerable advertisement blockers mentioned in \cite{abp_code_injection}, including AdBlock and uBlock. We are not able to reproduce on uBlock. For unknown reason, uBlock does not recognize any custom filter rules we write.
 
-We are able to reproduce this attack on AdBlock, and the reproducible version range agrees with \cite{abp_code_injection}. The attack does not work on AdBlock 3.31.2 (released in June 2018), which does not introduce the rewrite feature yet. The attack works on AdBlock 3.32.0 (released in July 2018) and 3.44.0 (released in April 2019). We assume this attack works on the versions in between. This vulnerability is fixed in AdBlock 3.46.0 (releaesd in April 2019) \cite{cr4chrome_ab}.
+We are able to reproduce this attack on AdBlock, and the reproducible version range agrees with \cite{abp_code_injection}. The attack does not work on AdBlock 3.31.2 (released in June 2018), which does not introduce the rewrite feature yet. The attack works on AdBlock 3.32.0 (released in July 2018) and 3.44.0 (released in April 2019). We assume this attack works on the versions in between. This vulnerability is fixed in AdBlock 3.46.0 (released in April 2019) \cite{cr4chrome_ab}.
 
 \section{Discussion and Limitations}
 
 \subsection{Warnings During Design Phase}
 
-TODO
+As Adblock Plus is an open-source project is possible to follow the discussion behind the \$rewrite filter implementation in their issue tracker. Is interesting to note that before this feature was deployed in production several voices raised concerns about the security risks it implied. 
+The concerns addressed the risks of a malicious filter author and how platforms with user-uploaded content in the same origin would be endangered \cite{abp_issue_6622}.
 
-\begin{itemize}
-\item Public warnings previous the deploy of the \$rewrite feature.
-\end{itemize}
+As a response, a Software Engineer working for Adblock Plus stated that "these concerns may represent a risk, a conscious choice we make. One thing we could do is check \$rewrite rules in the known subscriptions (like EasyList) to keep an eye on them" \cite{abp_issue_6622}.
 
 \subsection{Mitigation by Google}
 \label{subsec:google_mitigate}
@@ -288,13 +325,8 @@ Google mitigates this attack by removing the open redirect \cite{superuser_ifl_r
 We think this defense is effective. When an attacker constructs the malicious AdBlock Plus rule, he or she cannot compute the signature required for the \lstinline{iflsig} query field. It is possible to compute the signature if the attacker is able to inject cookies to the victim user's browser and overwrites the NID cookie. However, we think this attack is out of scope.
 
 \subsection{Defense by Adblock Plus}
-
-TODO
-
-\begin{itemize}
-\item How Adblock Plus defended (limits the ability of filter rules).
-\end{itemize}
-
+As a mitigation to this security vulnerability, Adblock Plus included a change in its codebase to only allow rewrite redirections to internal resources. These resources are static and included in the source code of the extension. For example "\$rewrite=abp-resource:blank-js" makes a redirection to an empty JavaScript. Other internal resources available are an empty blank text ("abp-resource:blank-text"), a blank CSS ("abp-resource:blank-css") and a transparent gif ("abp-resource:1x1-transparent-gif"), among others. The \$rewrite rule is still present but with a reduced scope, achieving the goal of not only resolving the security concerns of the rewrite but also being able to prevent errors when blocking URLs \cite{abp_filter_guide}. 
+    
 \subsection{Proposed Mitigation}
 % Author: Eric Li
 
@@ -307,14 +339,16 @@ The disadvantage of this mitigation is that both the server and the browser requ
 \subsection{Limitations and Future Work}
 % Author: Eric Li
 
-In this research, we only investigate the Chromium browser. The main reason is that Chromium browser is popular and old versions of Chrome extensions can be easily downloaded from third party archives. Though we expect other browsers like Firefox, Safari, and Edge to behave the same, future work is needed to verify this behavior. We expect compiling AdBlock Plus from source when testing on other browsers.
+In this research, we only investigate the Chromium browser. The main reason is that Chromium browser is popular and old versions of Chrome extensions can be easily downloaded from third-party archives. Though we expect other browsers like Firefox, Safari, and Edge to behave the same, future work is needed to verify this behavior. We expect compiling AdBlock Plus from source when testing on other browsers.
 
 In this research, we also investigate the Linux operating system. Future work is expected to verify whether the attack still works on other operating systems like Windows and macOS.
 
-Since AdBlock Plus 3.2 uses manifest V2, the reproducibility of our demo depends on the browser supporting manifest V2. Chrome is in the process of ending support for manifest V2, but the exact timeline is not determined as of this research \cite{chrome_manifest_v2}. Thus, to reproduce this demo in the future when only manifest V3 is supported, the the Chromium browser must be downgraded.
+Since AdBlock Plus 3.2 uses manifest V2, the reproducibility of our demo depends on the browser supporting manifest V2. Chrome is in the process of ending support for manifest V2, but the exact timeline is not determined as of this research \cite{chrome_manifest_v2}. Thus, to reproduce this demo in the future when only manifest V3 is supported, the Chromium browser must be downgraded.
 
 \section{Related Work}
-TODO
+The popularity of extensions and the security risks they impose were addressed in several academic papers \cite{carlini2012evaluation} \cite{barth2010protecting} \cite{bauer2014analyzing}. Carlini et al. \cite{carlini2012evaluation} and Barth et al. \cite{barth2010protecting} focus on a broad security analysis of the Chrome extension ecosystem and its architecture.  In contrast, our research is an insight into the lifecycle of an arbitrary code execution vulnerability in a particular extension.
+Similar to our work Bauer et al. paper focuses on attacks of Chrome extensions while implementing proofs of poncepts on each scenario \cite{bauer2014analyzing}. Although their code samples that act as proof of concepts are not publicly available under a Creative Commons License. 
+
 \begin{itemize}
 \item Advertisement blocking and detection.
 \end{itemize}
@@ -323,14 +357,16 @@ TODO
 TODO
 
 \section*{Acknowledgment}
-TODO
+We would like to thank Hanan Hibshi for her insightful comments throughout the course of our research, and for having shown us a prolific field of study in the area of security such as browser extensions. This paper is a final project for the course "Browser Security" of the Master of Science in Information Technology-Information Security (MSIT-IS) and Master of Science in Information Security (MSIS) postgraduate programs at Carnegie Mellon University. 
+
+We would like to dedicate a special thanks to our peers who during the course provided us with feedback to improve the project.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
 \appendix
 
-This section records our responds to the peer review.
+This section records our responses to the peer review.
 
 % Author: Eric Li
 The first comment is about the replace script changing both static JS and dynamic JS's HTML elements, which creates confusion. As a response, we modify the demo to only change one of static JS and dynamic JS.
@@ -338,7 +374,7 @@ The first comment is about the replace script changing both static JS and dynami
 % Author: Eric Li
 The second comment is about Section \ref{sec:Implementation} mentioning only the start and end version of vulnerable extensions, without mentioning the versions in between. The peer reviewer suggests changing the sentences to ``between version X and Y.'' However, we choose to keep our writing because we want to only report what we tested. We add a sentence to state that the versions in between are assumed to be reproducible, though we did not test them.
 
-The third comment is about the business model in the final presentation. TODO
+The third comment is about the business model of Adblock Plus and how it affects the usability of the extension from a user's perspective. A usability analysis was not included in our analysis as we focus on the technical security aspects of the vulnerability present in the extension. As a threat from inside the company was a possible scenario in the threat model, it seems pertinent to understand the business model of the company that owns Adblock. Nevertheless, a usability evaluation of the extension is out of the scope of the research.
 
 % Author: Eric Li
 The fourth comment is about the Brave browser. We consider the Brave browser as out of scope. Through superficial research on its code base, it seems this browser implements advertisement blocking logic through Rust, which is different from AdBlock Plus. The advertisement blocking code does not contain the keyword ``rewrite'' in the context of the rewrite feature discussed in this paper, so we think Brave browser is not vulnerable.
