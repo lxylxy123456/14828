@@ -140,21 +140,15 @@ The victim user needs to have installed a vulnerable version of Adblock Plus in 
 Finally, for the attack to succeed the website that the victim will be visiting needs to fetch resources and load them in the webpage while exposing an open redirect in their website.
 
 \section{Attack Outline}
-The attack can be schematized in the fo
+The attack can be schematized as follows.
 
-\subsection{Victim website}
+\begin{enumerate}
+    \item Victim website: fetches and loads JavaScript (with XMLHttpRequest or similar technique) and has an open redirect vulnerability.
+    \item Victim user: has enabled a malicious filter list (from a third party or installed by default), and visits the victim's website.
+    \item Attacker: is in control of the malicious filter rule. Archives arbitrary code execution in the client.
+\end{enumerate}
 
-has an open redirect combined with fetching and loading JS code provokes worse problems.
-
-\subsection{Victim user}
-
-install malicious filter list (may be updated automatically), visit victim website.
-
-\subsection{Attacker}
-
-control the malicious filter list.
-
-\subsection{Potential impact}
+See details of the attack in Section \ref{sec:Implementation}.
 
 \section{Implementation}
 \label{sec:Implementation}
@@ -602,27 +596,4 @@ The fifth comment is about Microsoft Edge. In our older draft of the paper we on
 
 \end{appendices}
 \end{document}
-
-\begin{table}[htbp]
-\caption{Table Type Styles}
-\begin{center}
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{Table}&\multicolumn{3}{|c|}{\textbf{Table Column Head}} \\
-\cline{2-4} 
-\textbf{Head} & \textbf{\textit{Table column subhead}}& \textbf{\textit{Subhead}}& \textbf{\textit{Subhead}} \\
-\hline
-copy& More table copy$^{\mathrm{a}}$& &  \\
-\hline
-\multicolumn{4}{l}{$^{\mathrm{a}}$Sample of a Table footnote.}
-\end{tabular}
-\label{tab1}
-\end{center}
-\end{table}
-
-\begin{figure}[htbp]
-\centerline{\includegraphics{fig1.png}}
-\caption{Example of a figure caption.}
-\label{fig}
-\end{figure}
 
