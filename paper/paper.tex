@@ -15,7 +15,6 @@
 % To prevent URL in bibliographic overflowing to second column
 \usepackage[hyphens]{url}
 
-\usepackage{dirtree}
 \usepackage{hyperref}
 
 \lstset{
@@ -24,6 +23,7 @@
   frame=single,
   breaklines=true,
   postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+  tabsize=4,
 }
 
 \graphicspath{ {./images/} }
@@ -107,7 +107,7 @@ We contribute the following:
 Extensions play a critical role in the capabilities of modern browsers, enabling customized web experiences. Among them is a popular category of extensions that blocks advertisements on web pages. One of the most popular in that category is Adblock Plus. According to statistics from the Chrome extensions web store and Mozilla Firefox add-on store, tens of millions of users have Adblock Plus installed \cite{noauthor_adblockchrome_nodate, noauthor_adblockfirefox_nodate}. According to a study by Pujol et al., 22\% of the most active users analyzed browse the Web with Adblock Plus. In fact, Ad-blocking extensions are so popular that advertisement vendors have begun to take active measures against them \cite{mughees_first_2016}. Therefore, vulnerabilities from the Adblock Plus extension can impact a considerable amount of internet users. That is why we have chosen to investigate a vulnerability in a previous version of Adblock Plus.
 
 \subsection{Adblock Plus business model}
-According to Alphabet's financial report, in the last quarter of 2022, the company had a revenue of more than 59,000 million dollars under the category of advertising \cite{alphabet_revenue}. The figures that the online advertising industry manages show why there is a fierce fight between publisher of contents, ad networks and ad-blocking software. Eyeo GmbH business model is not exempt from this dispute. As part of their business model, the company charges fees to big companies to be included in an allow-list as long as the advertisement on their webpages is considered as "acceptable ads". This category is defined by an "acceptable Ads Committee" created by Adblock's company that counts on the presence of several stakeholders such as Amazon and Dell. The acceptable criteria of an ad depends on its placement on a page, its size and its being distinctive from the main content of the page \cite{acceptable_ads}. Although these commercial deals are not public, the Financial Times published that the fee that Adblock Plus charges to the big companies for being in the whitelist is approximately 30\% of the ad revenues archived by unblocked ads on those sites \cite{financial_times}. 
+According to Alphabet's financial report, in the last quarter of 2022, the company had a revenue of more than 59,000 million dollars under the category of advertising \cite{alphabet_revenue}. The figures that the online advertising industry manages show why there is a fierce fight between publisher of contents, ad networks and ad-blocking software. Eyeo GmbH business model is not exempt from this dispute. As part of their business model, the company charges fees to big companies to be included in an allow-list as long as the advertisement on their webpages is considered as ``acceptable ads''. This category is defined by an ``acceptable Ads Committee'' created by Adblock's company that counts on the presence of several stakeholders such as Amazon and Dell. The acceptable criteria of an ad depends on its placement on a page, its size and its being distinctive from the main content of the page \cite{acceptable_ads}. Although these commercial deals are not public, the Financial Times published that the fee that Adblock Plus charges to the big companies for being in the whitelist is approximately 30\% of the ad revenues archived by unblocked ads on those sites \cite{financial_times}. 
 A caveat related to the links between the stakeholders of the ad industry is that since 2022, the new CEO of Eyeo GmbH is Frank Einecke, a former executive of Google for 14 years.
 
 
@@ -117,7 +117,7 @@ The default advertisement-blocking behaviors of Adblock Plus are defined by a fi
 
 \subsection{The Rewrite Rule: What and Why}
 % Author: Chengcheng Ding
-In version 3.2 of Adblock Plus, released on July 17, 2018, a new filter option called "rewrite" was introduced. It allows users to rewrite outgoing requests to certain URL(s). In this version, the destination of requests can be rewritten to resources within the same origin. For example, a request to "foo.com/ad.js" can be rewritten to "foo.com/not-ad.js".
+In version 3.2 of Adblock Plus, released on July 17, 2018, a new filter option called ``rewrite'' was introduced. It allows users to rewrite outgoing requests to certain URL(s). In this version, the destination of requests can be rewritten to resources within the same origin. For example, a request to ``foo.com/ad.js'' can be rewritten to ``foo.com/not-ad.js''.
 
 There can be multiple correct usages of the rewrite filter. The first (and primary) one is when simply blocking a request to a certain advertisement-related resource will lead to an error. That's when rewriting the request is a reasonable way to block advertisements with minimal impact on user experience.
 
@@ -140,13 +140,21 @@ The victim user needs to have installed a vulnerable version of Adblock Plus in 
 Finally, for the attack to succeed the website that the victim will be visiting needs to fetch resources and load them in the webpage while exposing an open redirect in their website.
 
 \section{Attack Outline}
-The threat model can be schematized in an attack outline where each actor involved fulfills the following requirements.
-\begin{itemize}
-\item Victim website: open redirect combined with fetching and loading JS code provokes worse problems.
-\item Victim user: install malicious filter list (may be updated automatically), visit victim website.
-\item Attacker: control the malicious filter list.
-\item Potential impact.
-\end{itemize}
+The attack can be schematized in the fo
+
+\subsection{Victim website}
+
+has an open redirect combined with fetching and loading JS code provokes worse problems.
+
+\subsection{Victim user}
+
+install malicious filter list (may be updated automatically), visit victim website.
+
+\subsection{Attacker}
+
+control the malicious filter list.
+
+\subsection{Potential impact}
 
 \section{Implementation}
 \label{sec:Implementation}
@@ -232,17 +240,120 @@ The purpose of this section is to show that rewrite rules can modify HTTP reques
 
 Note that we use XMLHttpRequest (XHR) in the entire demonstration. However, other techniques like fetch also work.
 
+index.html:
+\begin{lstlisting}[language=HTML]
+<p>
+    Targeted advertisement:
+    <span id="user_info" class="border">...</span>
+</p>
+\end{lstlisting}
+
+script.js:
+\begin{lstlisting}
+{
+	const req = new XMLHttpRequest();
+	const url = new URL('/advertisement', document.baseURI);
+	const params = new URLSearchParams();
+	params.set('city', 'pittsburgh');
+	params.set('role', 'students');
+	params.set('company', 'CMU');
+	url.search = params.toString();
+	req.addEventListener("load", function() {
+		document.getElementById("user_info").innerText = req.responseText;
+	});
+	req.open("GET", url, true);
+	req.send();
+}
+\end{lstlisting}
+
 \subsubsection{Static JavaScript}
 
 The victim website loads a JavaScript script statically using the \lstinline{<script>} tag in HTML. The loaded script changes HTML to indicate that the script is loaded correctly. This section demonstrates that Adblock Plus is able to block a static script from loading. However, rewrite rules cannot modify the request to load another script instead.
+
+index.html:
+\begin{lstlisting}[language=HTML]
+<p>
+    Static JS:
+    <span id="sjs" class="border">...</span>
+    <script src="/static/static.js"></script>
+</p>
+\end{lstlisting}
+
+static.js:
+\begin{lstlisting}
+document.getElementById("sjs").innerText = "Static JS loaded";
+document.getElementById("sjs").className = "success";
+\end{lstlisting}
+
+static-replace.js:
+\begin{lstlisting}
+document.getElementById("sjs").innerText = "REPLACED JS";
+document.getElementById("sjs").className = "warn";
+\end{lstlisting}
 
 \subsubsection{Dynamic JavaScript}
 
 The victim website loads a JavaScript script dynamically when the user clicks a button. The browser first requests the content of the script using XHR. The browser then evaluates the downloaded script using \lstinline{eval()}. This is similar to how Google Maps dynamically load JavaScripts while the user is browsing the map. Similar to Google Maps, the victim website must enable \lstinline{script-src 'unsafe-eval'} in CSP to make dynamically loading JavaScript working.
 
+index.html:
+\begin{lstlisting}[language=HTML]
+<p>
+    Dynamic JS:
+    <span id="djs" class="border">...</span>
+    <button id="load">Load</button>
+</p>
+\end{lstlisting}
+
+dynamic.js:
+\begin{lstlisting}
+document.getElementById("djs").innerText = "Dynamic JS loaded";
+document.getElementById("djs").className = "success";
+\end{lstlisting}
+
+dynamic-replace.js:
+\begin{lstlisting}
+document.getElementById("sjs").innerText = "REPLACED JS";
+document.getElementById("sjs").className = "warn";
+\end{lstlisting}
+
 \subsubsection{Open Redirect}
 
 One weakness of the victim website is open redirect, where any user can define HTTP redirects in the website \cite{cwe_open_redir}. In the victim website, the attacker can control the URL \lstinline{/redirect} to return an HTTP 302 to any URL. Example URL include a JavaScript on the victim website and a JavaScript on the attacker website.
+
+index.html:
+\begin{lstlisting}[language=HTML]
+<p>
+    Open <a href="/redirect">redirect</a>:
+    <input type="name" id="redir_url" value="{{ redir_url }}"
+            autocomplete="off"/>
+    <br />
+    <ul>
+        <li class="redir_prefill">/static/dynamic-replace.js</li>
+        <li class="redir_prefill">{{ ATTACKER }}/static/exploit.js</li>
+        <!-- <li class="redir_prefill">/upload/user.js</li> -->
+    </ul>
+</p>
+\end{lstlisting}
+
+script.js:
+\begin{lstlisting}
+function send_redir_url() {
+	const payload = new FormData();
+	payload.append("url", document.getElementById("redir_url").value);
+	const req = new XMLHttpRequest();
+	req.open("POST", "/redirect");
+	req.send(payload);
+}
+
+document.getElementById("redir_url").addEventListener("input", send_redir_url);
+
+for (let i of document.getElementsByClassName("redir_prefill")) {
+	i.addEventListener("click", function(event) {
+		document.getElementById("redir_url").value = this.innerText;
+		send_redir_url();
+	});
+}
+\end{lstlisting}
 
 The I'm Feeling Lucky button provided by Google Search has this weakness in 2019. When the user clicks the button, the website sends a GET request to Google's server. The request contains the user's query and \lstinline{btnI} parameter to indicate the user clicks the I'm Feeling Lucky button. Google's server returns an HTTP 302 response to the first Google Search result. An attacker can use this feature as an open redirect. The attacker simply needs to construct a Google Search query that places the redirect target as the first Google Search result. This weakness is fixed by Google later, as discussed in Section~\ref{subsec:google_mitigate}.
 
@@ -250,9 +361,68 @@ The I'm Feeling Lucky button provided by Google Search has this weakness in 2019
 
 Another weakness of the victim website is user uploaded file with JavaScript content \cite{cwe_upload_file}. The victim website does not perform any sanitization to the file uploaded, and any user of the victim website can view the uploaded file. Thus, if the attacker can trick the victim browser to load the uploaded file, the attacker can achieve arbitrary code execution.
 
+index.html:
+\begin{lstlisting}
+<p>
+    We will host your input at
+    <a href="/upload/user.js">/upload/user.js</a>!
+    <br />
+    <input name="user" id="user" />
+</p>
+\end{lstlisting}
+
+script.js:
+\begin{lstlisting}
+document.getElementById("user").addEventListener("input", function(event) {
+	const payload = new FormData();
+	payload.append("user", this.value);
+	const req = new XMLHttpRequest();
+	req.open("POST", "/upload/user.js");
+	req.send(payload);
+});
+\end{lstlisting}
+
 \subsubsection{CSP}
 
 The victim website allows dynamically configuring the website's CSP. This allows easy understanding the effectiveness of different defense strategies. In an attempt to defend, the victim user can try to remove \lstinline{script-src *} from CSP and/or to add \lstinline{connect-src 'self'} to the CSP.
+
+index.html:
+\begin{lstlisting}
+<p>
+    CSP: <button id="csp_apply">Apply</button>
+    <br />
+    {% for enable, line in csp_list %}
+    <input type="checkbox" id="c{{ loop.index0 }}"
+        name="c{{ loop.index0 }}" autocomplete="off"
+        {%- if enable %} checked{% endif %}
+        {%- if loop.last %} class="last"{% endif %}>
+    <label for="c{{ loop.index0 }}"><tt>{{ line }}</tt></label><br>
+    {% endfor %}
+</p>
+\end{lstlisting}
+
+script.js
+\begin{lstlisting}
+document.getElementById("csp_apply").addEventListener("click", function(event) {
+	event.preventDefault();
+	location.reload();
+});
+
+function handle_check(event) {
+	const payload = new FormData();
+	for (let i = 0;; i++) {
+		const elem = document.getElementById("c" + i);
+		payload.append("c" + i, JSON.stringify(elem.checked));
+		if (elem.classList.contains("last")) {
+			break;
+		}
+	}
+
+	const req = new XMLHttpRequest();
+	req.open("POST", "/csp-list");
+	req.send(payload);
+}
+\end{lstlisting}
 
 \subsection{Attacker User}
 
@@ -344,7 +514,7 @@ We are able to reproduce this attack on AdBlock, and the reproducible version ra
 As Adblock Plus is an open-source project is possible to follow the discussion behind the \$rewrite filter implementation in their issue tracker. Is interesting to note that before this feature was deployed in production several voices raised concerns about the security risks it implied. 
 The concerns addressed the risks of a malicious filter author and how platforms with user-uploaded content in the same origin would be endangered \cite{abp_issue_6622}.
 
-As a response, a Software Engineer working for Adblock Plus stated that "these concerns may represent a risk, a conscious choice we make. One thing we could do is check \$rewrite rules in the known subscriptions (like EasyList) to keep an eye on them" \cite{abp_issue_6622}.
+As a response, a Software Engineer working for Adblock Plus stated that ``these concerns may represent a risk, a conscious choice we make. One thing we could do is check \$rewrite rules in the known subscriptions (like EasyList) to keep an eye on them'' \cite{abp_issue_6622}.
 
 \subsection{Mitigation by Google}
 \label{subsec:google_mitigate}
@@ -359,7 +529,7 @@ Google mitigates this attack by removing the open redirect \cite{superuser_ifl_r
 We think this defense is effective. When an attacker constructs the malicious AdBlock Plus rule, he or she cannot compute the signature required for the \lstinline{iflsig} query field. It is possible to compute the signature if the attacker is able to inject cookies to the victim user's browser and overwrites the NID cookie. However, we think this attack is out of scope.
 
 \subsection{Defense by Adblock Plus}
-As a mitigation to this security vulnerability, Adblock Plus included a change in its codebase to only allow rewrite redirections to internal resources. These resources are static and included in the source code of the extension. For example "\$rewrite=abp-resource:blank-js" makes a redirection to an empty JavaScript. Other internal resources available are an empty blank text ("abp-resource:blank-text"), a blank CSS ("abp-resource:blank-css") and a transparent gif ("abp-resource:1x1-transparent-gif"), among others. The \$rewrite rule is still present but with a reduced scope, achieving the goal of not only resolving the security concerns of the rewrite but also being able to prevent errors when blocking URLs \cite{abp_filter_guide}. 
+As a mitigation to this security vulnerability, Adblock Plus included a change in its codebase to only allow rewrite redirections to internal resources. These resources are static and included in the source code of the extension. For example ``\$rewrite=abp-resource:blank-js'' makes a redirection to an empty JavaScript. Other internal resources available are an empty blank text (``abp-resource:blank-text''), a blank CSS (``abp-resource:blank-css'') and a transparent gif (``abp-resource:1x1-transparent-gif''), among others. The \$rewrite rule is still present but with a reduced scope, achieving the goal of not only resolving the security concerns of the rewrite but also being able to prevent errors when blocking URLs \cite{abp_filter_guide}. 
     
 \subsection{Proposed Mitigation}
 % Author: Eric Li
@@ -393,7 +563,7 @@ Finally, the research conducted by Alrizah et al. analyzed how Ad-blocking Syste
 To conclude this article, we would like to give a review of the vulnerability that allowed arbitrary code execution: The vulnerability is actually composed of multiple low-priority vulnerabilities from different parties. A victim website needs to have open redirect or custom script hosting enabled, which is not even considered a vulnerability for most developers. A victim user needs to apply an Adblock Plus custom filter from another party, which is not expected to lead to an exploit as powerful as arbitrary code injection. Finally, Adblock Plus needs to allow the rewriting of requests to the same origin.
 To the parties involved, the corresponding vulnerabilities are most likely considered non-crucial, and will not be prioritized for patching, if patching is considered at all. Unfortunately, all of those little bugs added up to a very formidable exploit. Of course, each party here has good reasons not to prioritize patching those vulnerabilities, as we have studied in the paper. But we believe the major takeaway here is how little vulnerabilities, seemingly innocent on their own, can sum up to a crucial vulnerability, that could potentially affect millions of people. 
 \section*{Acknowledgment}
-We would like to thank Hanan Hibshi for her insightful comments throughout the course of our research, and for having shown us a prolific field of study in the area of security such as browser extensions. This paper is a final project for the course "Browser Security" of the Master of Science in Information Technology-Information Security (MSIT-IS) and Master of Science in Information Security (MSIS) postgraduate programs at Carnegie Mellon University. 
+We would like to thank Hanan Hibshi for her insightful comments throughout the course of our research, and for having shown us a prolific field of study in the area of security such as browser extensions. This paper is a final project for the course ``Browser Security'' of the Master of Science in Information Technology-Information Security (MSIT-IS) and Master of Science in Information Security (MSIS) postgraduate programs at Carnegie Mellon University. 
 
 We would like to dedicate a special thanks to our peers who during the course provided us with feedback to improve the project.
 
@@ -402,132 +572,11 @@ We would like to dedicate a special thanks to our peers who during the course pr
 
 \begin{appendices}
 
-\section{Implementation code}
-% Author: Chengcheng Ding
-
-Directory of the victim website:
-
-\dirtree{%
-.1 victim.
-.2 static.
-.3 advertisement.js.
-.3 advertisement.png.
-.3 {dynamic-replace.js}.
-.3 {dynamic.js}.
-.3 {replace.png}.
-.3 {script.js}.
-.3 {static-replace.js}.
-.3 {static.js}.
-.3 {style.css}.
-.3 welcome.png.
-.2 templates.
-.3 \hyperref[victim-index.html]{index.html}.
-.2 {victim.py}.
-}
-
-We are selectively showing some of the code for the context of this paper.
-
-\subsection{victim/templates/index.html}
-\label{victim-index.html}
-
-\begin{lstlisting}
-<!doctype html>
-
-<html>
-	<head>
-		<title>Victim</title>
-		<link rel="stylesheet" href="/static/style.css"></link>
-	</head>
-	<body>
-		<h1>Hello Victim</h1>
-		<hr />
-		<p>
-			Welcome image:
-			<img src="/static/welcome.png">
-		</p>
-		<hr />
-		<p>
-			Advertisement:
-			<span id="ajs" class="border">...</span>
-			<span id="ads_png">
-				<!-- <img src="/static/advertisement.png"> -->
-			</span>
-			<script src="/static/advertisement.js"></script>
-		</p>
-		<hr />
-		<p>
-			Targeted advertisement:
-			<span id="user_info" class="border">...</span>
-		</p>
-		<hr />
-		<p>
-			Static JS:
-			<span id="sjs" class="border">...</span>
-			<script src="/static/static.js"></script>
-		</p>
-		<hr />
-		<p>
-			Dynamic JS:
-			<span id="djs" class="border">...</span>
-			<button id="load">Load</button>
-		</p>
-		<hr />
-		<p>
-			Open <a href="/redirect">redirect</a>:
-			<input type="name" id="redir_url" value="{{ redir_url }}"
-					autocomplete="off"/>
-			<br />
-			<ul>
-				<li class="redir_prefill">/static/dynamic-replace.js</li>
-				<li class="redir_prefill">{{ ATTACKER }}/static/exploit.js</li>
-				<!-- <li class="redir_prefill">/upload/user.js</li> -->
-			</ul>
-		</p>
-		<hr />
-		<p>
-			We will host your input at
-			<a href="/upload/user.js">/upload/user.js</a>!
-			<br />
-			<input name="user" id="user" />
-		</p>
-		<hr />
-		<p>
-			CSP: <button id="csp_apply">Apply</button>
-			<br />
-			{% for enable, line in csp_list %}
-			<input type="checkbox" id="c{{ loop.index0 }}"
-				name="c{{ loop.index0 }}" autocomplete="off"
-				{%- if enable %} checked{% endif %}
-				{%- if loop.last %} class="last"{% endif %}>
-			<label for="c{{ loop.index0 }}"><tt>{{ line }}</tt></label><br>
-			{% endfor %}
-		</p>
-		<script src="/static/script.js"></script>
-	</body>
-</html>
-\end{lstlisting}
-
-Directory of the attacker website
-
-\dirtree{%
-.1 attacker.
-.2 static.
-.3 exploit.js.
-.3 script.js.
-.3 style.css.
-.2 templates.
-.3 index.html.
-.2 attacker.py.
-.2 filter-list.txt.
-}
-
-for the full implementation, please find it at our public repository \href{https://github.com/lxylxy123456/14828}{here}
-
 \section{Peer reviews we have received}
 
 \begin{enumerate}
     \item In the demo when the dynamic javascript is rewritten, the static javascript is also rewritten. If possible, we think separating those scripts in the demo may gave the audience a clearer understanding.
-    \item In the "IMPLEMENTATION" section of the draft, it was mentioned that "Adblock Plus version between 3.2 and 3.5.1", yet, the "reproducibility analysis" section mentions that "This attack works on AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019)". We think that rephrasing the later sentence to "This attack works on version between AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019)" might be clearer than before.
+    \item In the ``IMPLEMENTATION'' section of the draft, it was mentioned that ``Adblock Plus version between 3.2 and 3.5.1'', yet, the ``reproducibility analysis'' section mentions that ``This attack works on AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019)''. We think that rephrasing the later sentence to ``This attack works on version between AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019)'' might be clearer than before.
     \item As mentioned in the first slides of the final presentation, the business model of Eyeo GmbH is an interesting model. We think it would be worth mentioning about how the business model affects Ablock Plus's usability from a user's perspective.
     \item To our knowledge, the Brave Browser has its own engine for Adblock named AdBlock-rust and it supports Adblock Plus syntax. Is there a possibility that past version of Adblock-rust would also be vulnerable?
     \item On the browser side, Adblock Plus does maintain a version for Microsoft Edge. Would Edge also be vulnerable for the same version of Adblock Plus?
