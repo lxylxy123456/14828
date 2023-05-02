@@ -15,6 +15,17 @@
 % To prevent URL in bibliographic overflowing to second column
 \usepackage[hyphens]{url}
 
+\usepackage{dirtree}
+\usepackage{hyperref}
+
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  frame=single,
+  breaklines=true,
+  postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+}
+
 \graphicspath{ {./images/} }
 
 \lstset{basicstyle=\ttfamily, upquote=true}
@@ -52,7 +63,16 @@ chengchd@andrew.cmu.edu
 \maketitle
 
 \begin{abstract}
-TODO
+The popularity of extensions that block advertisements is undeniable. Their omnipresence in the browsers of users around the world makes any security vulnerability in these extensions critical. In this article, we will investigate a vulnerability introduced in version 3.2 of Adblock Plus that enabled the execution of arbitrary code on users’ devices, their impact, and what vendors can do to mitigate against it.
+
+We choose Adblock Plus as the adblocking extension to analyze as it is one of the most popular ones with more than tens of millions of downloads on Chrome and Firefox combined. 
+
+Our approach to understanding the vulnerability is, first, to study the full chain of the attack going from the \$rewrite feature implemented in the codebase of Adblock Plus, to the chain of vulnerabilities that can be leveraged by an attacker to gain arbitrary code execution. Based on those insights, we build a proof of concept of the attack, specifying the versions of all of the related software, and providing a skeleton website to demonstrate the attacker's capabilities.
+
+In our experimental setup we reproduce two attack scenarios. First, how an attacker using an open redirect on a victim website, that loads dynamic JavaScript, can abuse the AdBlock Plus \$rewrite rule to force the victim to retrieve malicious JavaScript code. Second, how an attacker using a feature for uploading user content present on a victim’s website, can upload a malicious JavaScript file and force the victim to retrieve it.
+
+For each of these scenarios, we address the mitigations needed to prevent the attack from happening. In the first case, adding connect-src 'self' to CSP defends against this attack. In the second case, CSP doesn’t defend against this attack so we propose as a countermeasure that the victim website cryptographically verify the dynamic JavaScript fetched from the server
+
 % This document is a model and instructions for \LaTeX. This and the IEEEtran.cls file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, or Math in Paper Title or Abstract.
 \end{abstract}
 
@@ -176,15 +196,29 @@ First, the attacker website hosts an filter rules file that will be loaded to th
 		% ||*/static/dynamic.js$rewrite=/upload/user.js
 \end{enumerate}
 
-Second, the attacker website needs to host the malicious JavaScript payload to be executed on the victim browser. To simplify our design, we host the JavaScript payload statically. The attacker website sets Access-Control-Allow-Origin to \lstinline{"*"} to allow the malicious JavaScript from being read by the victim website on the victim browser.
+The actual filter: 
+
+\begin{lstlisting}
+[Adblock Plus 2.0]
+||*/static/advertisement.png
+||*/static/static.js
+||*/static/advertisement.png$rewrite=/static/welcome.png
+||*/advertisement?*^$rewrite=/advertisement
+||*/static/static.js$rewrite=/static/static-replace.js
+||*/static/dynamic.js$rewrite=/static/dynamic-replace.js
+||*/static/dynamic.js$rewrite=/redirect
+||*/static/dynamic.js$rewrite=/upload/user.js
+\end{lstlisting}
+
+Second, the attacker's website needs to host the malicious JavaScript payload to be executed on the victim's browser. To simplify our design, we host the JavaScript payload statically. The attacker website sets Access-Control-Allow-Origin to \lstinline{"*"} to allow the malicious JavaScript from being read by the victim website on the victim browser.
 
 \subsection{Victim Website}
 
-Similar to the attacker website, we implement the attacker website using Flask as the backend. The host name and port of the victim website are \lstinline{victim.local:8080}. We use plain HTML and JavaScript as the frontend. The victim website has multiple sections, as discussed below in detail.
+Similar to the attacker website, we implement the attacker website using Flask as the backend. The hostname and port of the victim website are \lstinline{victim.local:8080}. We use plain HTML and JavaScript as the frontend. The victim website has multiple sections, as discussed below in detail.
 
 \subsubsection{Welcome Image}
 
-The victim website loads a welcome image using HTML's \lstinline{<img>} tag. This provides a image for rewriting the advertisement image later.
+The victim website loads a welcome image using HTML's \lstinline{<img>} tag. This provides an image for rewriting the advertisement image later.
 
 \subsubsection{Advertisement Image}
 
@@ -347,15 +381,17 @@ Since AdBlock Plus 3.2 uses manifest V2, the reproducibility of our demo depends
 
 \section{Related Work}
 The popularity of extensions and the security risks they impose were addressed in several academic papers \cite{carlini2012evaluation} \cite{barth2010protecting} \cite{bauer2014analyzing}. Carlini et al. \cite{carlini2012evaluation} and Barth et al. \cite{barth2010protecting} focus on a broad security analysis of the Chrome extension ecosystem and its architecture.  In contrast, our research is an insight into the lifecycle of an arbitrary code execution vulnerability in a particular extension.
+
 Similar to our work Bauer et al. paper focuses on attacks of Chrome extensions while implementing proofs of poncepts on each scenario \cite{bauer2014analyzing}. Although their code samples that act as proof of concepts are not publicly available under a Creative Commons License. 
 
-\begin{itemize}
-\item Advertisement blocking and detection.
-\end{itemize}
+In \cite{10.1145/3433210.3437536} Zafar et al. conduct a thorough study of the privacy implications of Adblock Plus' allow-lists. Although similar to that paper, our research addresses the allow-list (and business model) present on Adblock Plus, our aim is to better explain a threat model for the particular attack addressed. Unlike \cite{10.1145/3433210.3437536} the focus of this paper is guided by a security question and not focused on the privacy implications of Adblock Plus. 
+
+Finally, the research conducted by Alrizah et al. analyzed how Ad-blocking Systems rely on a crowdsourced process to build their filters. The aim of their paper is to analyze the pitfalls of the crowdsourcing process in terms of false positives and false negatives during the blocking of content \cite{10.1145/3355369.3355588}. While \cite{10.1145/3355369.3355588} is not focused on Adblock Plus security vulnerabilities, the study of how the lists are built by third parties in a crowdsourced manner, gives a complementary and useful insight to our work as we mention this fact in terms of the threat model being analyzed.
 
 \section{Conclusion}
-TODO
-
+% Author: Chengcheng Ding
+To conclude this article, we would like to give a review of the vulnerability that allowed arbitrary code execution: The vulnerability is actually composed of multiple low-priority vulnerabilities from different parties. A victim website needs to have open redirect or custom script hosting enabled, which is not even considered a vulnerability for most developers. A victim user needs to apply an Adblock Plus custom filter from another party, which is not expected to lead to an exploit as powerful as arbitrary code injection. Finally, Adblock Plus needs to allow the rewriting of requests to the same origin.
+To the parties involved, the corresponding vulnerabilities are most likely considered non-crucial, and will not be prioritized for patching, if patching is considered at all. Unfortunately, all of those little bugs added up to a very formidable exploit. Of course, each party here has good reasons not to prioritize patching those vulnerabilities, as we have studied in the paper. But we believe the major takeaway here is how little vulnerabilities, seemingly innocent on their own, can sum up to a crucial vulnerability, that could potentially affect millions of people. 
 \section*{Acknowledgment}
 We would like to thank Hanan Hibshi for her insightful comments throughout the course of our research, and for having shown us a prolific field of study in the area of security such as browser extensions. This paper is a final project for the course "Browser Security" of the Master of Science in Information Technology-Information Security (MSIT-IS) and Master of Science in Information Security (MSIS) postgraduate programs at Carnegie Mellon University. 
 
@@ -364,7 +400,140 @@ We would like to dedicate a special thanks to our peers who during the course pr
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
-\appendix
+\begin{appendices}
+
+\section{Implementation code}
+% Author: Chengcheng Ding
+
+Directory of the victim website:
+
+\dirtree{%
+.1 victim.
+.2 static.
+.3 advertisement.js.
+.3 advertisement.png.
+.3 {dynamic-replace.js}.
+.3 {dynamic.js}.
+.3 {replace.png}.
+.3 {script.js}.
+.3 {static-replace.js}.
+.3 {static.js}.
+.3 {style.css}.
+.3 welcome.png.
+.2 templates.
+.3 \hyperref[victim-index.html]{index.html}.
+.2 {victim.py}.
+}
+
+We are selectively showing some of the code for the context of this paper.
+
+\subsection{victim/templates/index.html}
+\label{victim-index.html}
+
+\begin{lstlisting}
+<!doctype html>
+
+<html>
+	<head>
+		<title>Victim</title>
+		<link rel="stylesheet" href="/static/style.css"></link>
+	</head>
+	<body>
+		<h1>Hello Victim</h1>
+		<hr />
+		<p>
+			Welcome image:
+			<img src="/static/welcome.png">
+		</p>
+		<hr />
+		<p>
+			Advertisement:
+			<span id="ajs" class="border">...</span>
+			<span id="ads_png">
+				<!-- <img src="/static/advertisement.png"> -->
+			</span>
+			<script src="/static/advertisement.js"></script>
+		</p>
+		<hr />
+		<p>
+			Targeted advertisement:
+			<span id="user_info" class="border">...</span>
+		</p>
+		<hr />
+		<p>
+			Static JS:
+			<span id="sjs" class="border">...</span>
+			<script src="/static/static.js"></script>
+		</p>
+		<hr />
+		<p>
+			Dynamic JS:
+			<span id="djs" class="border">...</span>
+			<button id="load">Load</button>
+		</p>
+		<hr />
+		<p>
+			Open <a href="/redirect">redirect</a>:
+			<input type="name" id="redir_url" value="{{ redir_url }}"
+					autocomplete="off"/>
+			<br />
+			<ul>
+				<li class="redir_prefill">/static/dynamic-replace.js</li>
+				<li class="redir_prefill">{{ ATTACKER }}/static/exploit.js</li>
+				<!-- <li class="redir_prefill">/upload/user.js</li> -->
+			</ul>
+		</p>
+		<hr />
+		<p>
+			We will host your input at
+			<a href="/upload/user.js">/upload/user.js</a>!
+			<br />
+			<input name="user" id="user" />
+		</p>
+		<hr />
+		<p>
+			CSP: <button id="csp_apply">Apply</button>
+			<br />
+			{% for enable, line in csp_list %}
+			<input type="checkbox" id="c{{ loop.index0 }}"
+				name="c{{ loop.index0 }}" autocomplete="off"
+				{%- if enable %} checked{% endif %}
+				{%- if loop.last %} class="last"{% endif %}>
+			<label for="c{{ loop.index0 }}"><tt>{{ line }}</tt></label><br>
+			{% endfor %}
+		</p>
+		<script src="/static/script.js"></script>
+	</body>
+</html>
+\end{lstlisting}
+
+Directory of the attacker website
+
+\dirtree{%
+.1 attacker.
+.2 static.
+.3 exploit.js.
+.3 script.js.
+.3 style.css.
+.2 templates.
+.3 index.html.
+.2 attacker.py.
+.2 filter-list.txt.
+}
+
+for the full implementation, please find it at our public repository \href{https://github.com/lxylxy123456/14828}{here}
+
+\section{Peer reviews we have received}
+
+\begin{enumerate}
+    \item In the demo when the dynamic javascript is rewritten, the static javascript is also rewritten. If possible, we think separating those scripts in the demo may gave the audience a clearer understanding.
+    \item In the "IMPLEMENTATION" section of the draft, it was mentioned that "Adblock Plus version between 3.2 and 3.5.1", yet, the "reproducibility analysis" section mentions that "This attack works on AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019)". We think that rephrasing the later sentence to "This attack works on version between AdBlock Plus 3.2 (released in July 2018) and 3.5.1 (released in April 2019)" might be clearer than before.
+    \item As mentioned in the first slides of the final presentation, the business model of Eyeo GmbH is an interesting model. We think it would be worth mentioning about how the business model affects Ablock Plus's usability from a user's perspective.
+    \item To our knowledge, the Brave Browser has its own engine for Adblock named AdBlock-rust and it supports Adblock Plus syntax. Is there a possibility that past version of Adblock-rust would also be vulnerable?
+    \item On the browser side, Adblock Plus does maintain a version for Microsoft Edge. Would Edge also be vulnerable for the same version of Adblock Plus?
+\end{enumerate}
+
+\section{Respond to peer review}
 
 This section records our responses to the peer review.
 
@@ -382,6 +551,7 @@ The fourth comment is about the Brave browser. We consider the Brave browser as 
 % Author: Eric Li
 The fifth comment is about Microsoft Edge. In our older draft of the paper we only mention Chrome (Chromium), Firefox, and Safari. We modify the paper to add Edge, since Edge is also a popular browser. We still assume the attack works on Edge with out actually testing, because as far as we know, Edge only works on Windows, but we are testing on Linux.
 
+\end{appendices}
 \end{document}
 
 \begin{table}[htbp]

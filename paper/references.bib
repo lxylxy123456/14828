@@ -205,3 +205,44 @@
 	note = "{Accessed}: Apr. 23, 2023"
 }
 
+
+@inproceedings{10.1145/3433210.3437536,
+    author = {Zafar, Ahsan and Sabir, Aafaq and Ahmed, Dilawer and Das, Anupam},
+    title = {Understanding the Privacy Implications of Adblock Plus's Acceptable Ads},
+    year = {2021},
+    isbn = {9781450382878},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3433210.3437536},
+    doi = {10.1145/3433210.3437536},
+    abstract = {Targeted advertisement is prevalent on the Web. Many privacy-enhancing tools have been developed to thwart targeted advertisement. Adblock Plus is one such popular tool, used by millions of users on a daily basis, to block unwanted ads and trackers. Adblock Plus uses EasyList and EasyPrivacy, the most prominent and widely used open-source filters, to block unwanted web contents. However, Adblock Plus, by default, also enables an exception list to unblock web requests that comply with specific guidelines defined by the Acceptable Ads Committee. Any publisher can enroll into the Acceptable Ads initiative to request the unblocking of web contents. Adblock Plus in return charges a licensing fee from large entities, who gain a significant amount of ad impressions per month due to participation in the Acceptable Ads initiative. However, the privacy implications of the default inclusion of the exception list has not been well studied, especially as it can unblock not only ads, but also trackers (e.g., unblocking contents otherwise blocked by EasyPrivacy).In this paper, we take a data-driven approach, where we collect historical updates made to Adblock Plus's exception list and real-world web traffic by visiting the top 10k websites listed by Tranco. Using such data we analyze not only how the exception list has evolved over the years in terms of both contents unblocked and partners/entities enrolled into the Acceptable Ads initiative, but also the privacy implications of enabling the exception list by default. We found that Google not only unblocks the most number of unique domains, but is also unblocked by the most number of unique partners. From our traffic analysis, we see that of the 42,210 Google bound web requests, originally blocked by EasyPrivacy, around 80% of such requests are unblocked by the exception list. More worryingly, many of the requests enable 1-by-1 tracking pixel images. We, therefore, question exception rules that negate EasyPrivacy filtering rules by default and advocate for a better vetting process.},
+    booktitle = {Proceedings of the 2021 ACM Asia Conference on Computer and Communications Security},
+    pages = {644–657},
+    numpages = {14},
+    keywords = {adblock rules, online tracking, privacy-enhancing tools},
+    location = {Virtual Event, Hong Kong},
+    series = {ASIA CCS '21}
+}
+      
+@inproceedings{10.1145/3355369.3355588,
+    author = {Alrizah, Mshabab and Zhu, Sencun and Xing, Xinyu and Wang, Gang},
+    title = {Errors, Misunderstandings, and Attacks: Analyzing the Crowdsourcing Process of Ad-Blocking Systems},
+    year = {2019},
+    isbn = {9781450369480},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3355369.3355588},
+    doi = {10.1145/3355369.3355588},
+    abstract = {Ad-blocking systems such as Adblock Plus rely on crowdsourcing to build and maintain filter lists, which are the basis for determining which ads to block on web pages. In this work, we seek to advance our understanding of the ad-blocking community as well as the errors and pitfalls of the crowdsourcing process. To do so, we collected and analyzed a longitudinal dataset that covered the dynamic changes of popular filter-list EasyList for nine years and the error reports submitted by the crowd in the same period.Our study yielded a number of significant findings regarding the characteristics of FP and FN errors and their causes. For instances, we found that false positive errors (i.e., incorrectly blocking legitimate content) still took a long time before they could be discovered (50% of them took more than a month) despite the community effort. Both EasyList editors and website owners were to blame for the false positives. In addition, we found that a great number of false negative errors (i.e., failing to block real advertisements) were either incorrectly reported or simply ignored by the editors. Furthermore, we analyzed evasion attacks from ad publishers against ad-blockers. In total, our analysis covers 15 types of attack methods including 8 methods that have not been studied by the research community. We show how ad publishers have utilized them to circumvent ad-blockers and empirically measure the reactions of ad blockers. Through in-depth analysis, our findings are expected to help shed light on any future work to evolve ad blocking and optimize crowdsourcing mechanisms.},
+    booktitle = {Proceedings of the Internet Measurement Conference},
+    pages = {230–244},
+    numpages = {15},
+    location = {Amsterdam, Netherlands},
+    series = {IMC '19}
+}
+
+  
+
+
+
+
